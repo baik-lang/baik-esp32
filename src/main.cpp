@@ -6,7 +6,6 @@
 
 #include "console.h"
 #include "strings.h"
-#include "baik.h"
 
 using namespace ESP32Console;
 
@@ -52,58 +51,12 @@ void handleFileUpload(AsyncWebServerRequest *request, String filename, size_t in
     }
 }
 
-void readFileToCStr(const char *path, String &content)
-{
-    // Open file for reading
-    File file = SPIFFS.open(path, "r");
-    if (!file)
-    {
-        Serial.println("Failed to open file for reading");
-        return;
-    }
-
-    // Allocate memory for the file content
-    size_t fileSize = file.size();
-    char *fileBuffer = new char[fileSize + 1]; // +1 for null terminator
-
-    // Read the file content
-    file.readBytes(fileBuffer, fileSize);
-    fileBuffer[fileSize] = '\0'; // Null-terminate the C-style string
-
-    // Store the content in the provided String variable
-    content = String(fileBuffer);
-
-    // Clean up
-    delete[] fileBuffer;
-    file.close();
-}
-
 void baikRun()
 {
     // REPL Setup
     console.setPrompt("Baik> ");
     console.begin(115200);
     console.registerSystemCommands();
-
-    struct baik *baik = baik_create();
-    baik_err_t err = BAIK_OK;
-    baik_val_t res = 0;
-
-     // Variable to hold the file content
-    String fileContent;
-    // Read the file and store the content in the variable
-    readFileToCStr("/baik.ina", fileContent);
-    if (err == BAIK_OK)
-    {
-        if (res == 0)
-            baik_exec(baik, fileContent.c_str(), NULL);
-    }
-    else
-    {
-        baik_print_error(baik, stdout, NULL, 1);
-    }
-
-    baik_destroy(baik);
 }
 
 void setup()

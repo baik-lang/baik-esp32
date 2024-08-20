@@ -1,3 +1,5 @@
+#include <SPIFFS.h>
+
 #include "./console.h"
 #include "soc/soc_caps.h"
 #include "esp_err.h"
@@ -187,6 +189,33 @@ namespace ESP32Console
         return false; // String does not exist in the array
     };
 
+    bool readFileToCStr(const char *path, String &content)
+    {
+        // Open file for reading
+        File file = SPIFFS.open(path, "r");
+        if (!file)
+        {
+            Serial.println("Failed to open file for reading");
+            return false;
+        }
+
+        // Allocate memory for the file content
+        size_t fileSize = file.size();
+        char *fileBuffer = new char[fileSize + 1]; // +1 for null terminator
+
+        // Read the file content
+        file.readBytes(fileBuffer, fileSize);
+        fileBuffer[fileSize] = '\0'; // Null-terminate the C-style string
+
+        // Store the content in the provided String variable
+        content = String(fileBuffer);
+
+        // Clean up
+        delete[] fileBuffer;
+        file.close();
+        return true;
+    }
+
     void Console::repl_task(void *args)
     {
         Console const &console = *(static_cast<Console *>(args));
@@ -207,12 +236,39 @@ namespace ESP32Console
 
         setvbuf(stdin, NULL, _IONBF, 0);
 
+        // BAIK Code Initialize 
+        struct baik *baik = baik_create();
+        baik_err_t err = BAIK_OK;
+        baik_val_t res = 0;
+
+        // Variable to hold the file content
+        String fileContent;
+        // Read the file and store the content in the variable
+        bool isBaikFileExists = readFileToCStr("/baik.ina", fileContent);
+        if (isBaikFileExists)
+        {
+            printf("\r\n"
+                    "Kode BAIK ditemukan dan dijalankan.....\r\n"
+                    "---------------------------------------\r\n");
+            if (err == BAIK_OK)
+            {
+                if (res == 0)
+                    baik_exec(baik, fileContent.c_str(), NULL);
+            }
+            else
+            {
+                baik_print_error(baik, stdout, NULL, 1);
+            }
+            printf("\r\n"
+                    "---------------------------------------\r\n");
+        }
+
         /* This message shall be printed here and not earlier as the stdout
          * has just been set above. */
         printf("\r\n"
-               "Type 'help' to get the list of commands.\r\n"
-               "Use UP/DOWN arrows to navigate through command history.\r\n"
-               "Press TAB when typing command name to auto-complete.\r\n");
+                "Selamat datang di BAIK X.\r\n"
+                "Ketik 'help' untuk melihat daftar perintah.\r\n"
+                "Gunakan tombol UP/DOWN untuk navigasi histori penrintah.\r\n");
 
         // Probe terminal status
         int probe_status = linenoiseProbe();
@@ -230,10 +286,6 @@ namespace ESP32Console
         }
 
         linenoiseSetMaxLineLen(console.max_cmdline_len_);
-
-        struct baik *baik = baik_create();
-        baik_err_t err = BAIK_OK;
-        baik_val_t res = 0;
 
         while (1)
         {
@@ -322,6 +374,7 @@ namespace ESP32Console
 
             linenoiseFree(line);
         }
+        baik_destroy(baik);
         ESP_LOGD(TAG, "REPL task ended");
         vTaskDelete(NULL);
     }

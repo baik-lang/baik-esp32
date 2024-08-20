@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAIK X</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            font-family: Arial, sans-serif;
+        }
+        #editor {
+            flex-grow: 1;
+        }
+        #run-button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #28a745;
+            color: white;
+            margin: 10px;
+        }
+        #config-form {
+            display: flex;
+            flex-direction: column;
+            margin: 10px;
+        }
+        #config-form input {
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        #config-form button {
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <form id="config-form">
+        <input type="text" id="ssid" placeholder="Wi-Fi SSID" required>
+        <input type="password" id="password" placeholder="Wi-Fi Password" required>
+        <button type="button" id="config-button">Save Wi-Fi Config</button>
+    </form>
+    
+    <script>
+            document.getElementById('config-button').addEventListener('click', function() {
+                const ssid = document.getElementById('ssid').value;
+                const password = document.getElementById('password').value;
+                const formData = new FormData();
+                formData.append('ssid', ssid);
+                formData.append('password', password);
+
+                fetch('/config', {
+                    method: 'POST',
+                    body: formData
+                }).then(response => response.text())
+                  .then(text => alert(text))
+                  .catch(error => console.error('Error:', error));
+            });
+    </script>
+</body>
+</html>

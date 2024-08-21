@@ -10,8 +10,8 @@
             "includePath": [
                 "/Users/anak10thn/Documents/BAIK/baik-esp32/include",
                 "/Users/anak10thn/Documents/BAIK/baik-esp32/src",
-                "/Users/anak10thn/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src",
                 "/Users/anak10thn/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
+                "/Users/anak10thn/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src",
                 "/Users/anak10thn/Documents/BAIK/baik-esp32/.pio/libdeps/esp32doit-devkit-v1/ESP Async WebServer/src",
                 "/Users/anak10thn/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
                 "/Users/anak10thn/Documents/BAIK/baik-esp32/.pio/libdeps/esp32doit-devkit-v1/AsyncTCP/src",
@@ -249,8 +249,8 @@
                 "path": [
                     "/Users/anak10thn/Documents/BAIK/baik-esp32/include",
                     "/Users/anak10thn/Documents/BAIK/baik-esp32/src",
-                    "/Users/anak10thn/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src",
                     "/Users/anak10thn/.platformio/packages/framework-arduinoespressif32/libraries/Preferences/src",
+                    "/Users/anak10thn/.platformio/packages/framework-arduinoespressif32/libraries/SPIFFS/src",
                     "/Users/anak10thn/Documents/BAIK/baik-esp32/.pio/libdeps/esp32doit-devkit-v1/ESP Async WebServer/src",
                     "/Users/anak10thn/.platformio/packages/framework-arduinoespressif32/libraries/FS/src",
                     "/Users/anak10thn/Documents/BAIK/baik-esp32/.pio/libdeps/esp32doit-devkit-v1/AsyncTCP/src",

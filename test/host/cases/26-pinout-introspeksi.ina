@@ -1,0 +1,20 @@
+/* Uji fungsi introspeksi pinout: pinInfo, pinCaps, pinPunya, daftarPin. */
+tulis("--- introspeksi pin ---");
+isi info = pinInfo(2);
+tulis("gpio =", info.gpio);
+tulis("label =", info.label);
+
+tulis("pin 2 output?", pinPunya(2, CAP_OUTPUT));
+tulis("pin 34 output?", pinPunya(34, CAP_OUTPUT));
+tulis("pin 34 input?", pinPunya(34, CAP_INPUT));
+tulis("pin 25 dac?", pinPunya(25, CAP_DAC));
+tulis("pin 2 dac?", pinPunya(2, CAP_DAC));
+tulis("pin 99 apa pun?", pinPunya(99, CAP_INPUT));
+
+tulis("pin ADC1 =", JSON.stringify(daftarPin(CAP_ADC1)));
+tulis("pin DAC =", JSON.stringify(daftarPin(CAP_DAC)));
+tulis("pin FLASH =", JSON.stringify(daftarPin(CAP_FLASH)));
+
+tulis("pinInfo(99) =", pinInfo(99));
+tulis("BOARD =", BOARD);
+tulis("CHIP =", CHIP);

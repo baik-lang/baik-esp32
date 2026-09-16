@@ -1,0 +1,41 @@
+// ============================================================
+//  09 - Suhu internal chip
+// ------------------------------------------------------------
+//  Peragaan        : temperatureRead/bacaSuhu, millis, min/max,
+//                    pemantauan berkala tanpa memblokir total
+//  Perangkat keras : tidak ada
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/09-suhu-chip.ina")
+// ============================================================
+
+// PERINGATAN: ini suhu DIE (cetakan silikon) chip, bukan suhu ruangan.
+// Nilainya selalu beberapa derajat lebih panas daripada udara sekitar,
+// tidak terkalibrasi, dan ikut naik saat WiFi menyala. Jangan dipakai
+// sebagai termometer lingkungan - untuk itu pakai sensor luar seperti
+// DS18B20, DHT22, atau BME280.
+
+tulis("Memantau suhu chip", BOARD);
+tulis("");
+
+isi terendah   = 999;
+isi tertinggi  = -999;
+isi jumlah     = 0;
+isi cacah      = 30;
+
+untuk (isi i = 0; i < cacah; i++) {
+  isi t = bacaSuhu();                 // alias dari temperatureRead()
+
+  jika (t < terendah)  { terendah = t; }
+  jika (t > tertinggi) { tertinggi = t; }
+  jumlah = jumlah + t;
+
+  tulis("t =", millis(), "ms | suhu =", t, "C | CPU =",
+        getCpuFrequencyMhz(), "MHz | heap =", ESP.getFreeHeap());
+  delay(500);
+}
+
+tulis("");
+tulis("Terendah  :", terendah, "C");
+tulis("Tertinggi :", tertinggi, "C");
+tulis("Rata-rata :", jumlah / cacah, "C");
+tulis("Selisih   :", tertinggi - terendah, "C");

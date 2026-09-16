@@ -1,0 +1,41 @@
+/* Mendokumentasikan BATASAN bahasa BAIK yang sudah dipastikan lewat uji.
+ * Berkas ini sengaja TIDAK memicu galat: ia hanya menegaskan bentuk yang
+ * BENAR, sedangkan bentuk yang belum didukung dicatat sebagai komentar.
+ *
+ * BELUM DIIMPLEMENTASI di src/baik/ (interpreter membalas
+ * "[<kata>] tidak terimplementasi"):
+ *    var        -> pakai `isi`
+ *    delete     -> tidak ada
+ *    kerjakan   -> do..while tidak ada, pakai `ulang`
+ *    pilih/sama -> switch/case tidak ada, pakai rantai jika/lainnya
+ *    ==         -> ditolak dengan pesan "Use ===, not =="
+ *    .length    -> pakai `.panjang`
+ *    closure    -> fungsi dalam fungsi TIDAK menangkap variabel luar
+ *                  (dibuktikan oleh 37-negatif-closure.ina)
+ */
+tulis("--- batasan ---");
+
+/* Pengganti `var` */
+isi nilai = 1;
+tulis(nilai);
+
+/* Pengganti switch: rantai jika/lainnya */
+fungsi namaHari(n) {
+  jika (n === 1) { balik "Senin"; }
+  lainnya jika (n === 2) { balik "Selasa"; }
+  lainnya { balik "lainnya"; }
+}
+tulis(namaHari(1));
+tulis(namaHari(2));
+tulis(namaHari(9));
+
+/* Pengganti do..while: ulang dengan penjaga */
+isi i = 0;
+ulang (benar) {
+  i = i + 1;
+  jika (i >= 3) { berhenti; }
+}
+tulis(i);
+
+/* panjang, bukan length */
+tulis([1, 2, 3].panjang);

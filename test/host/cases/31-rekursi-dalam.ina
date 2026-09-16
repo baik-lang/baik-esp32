@@ -1,0 +1,50 @@
+/* Uji rekursi DALAM dan rekursi saling-panggil (mutual recursion).
+ *
+ * Kasus 10-rekursi hanya menyentuh rekursi dangkal (faktorial/fibonacci).
+ * Di sini yang diuji: kedalaman tumpukan yang besar, dua fungsi yang saling
+ * memanggil, rekursi bercabang dua, dan rekursi yang hasilnya dipakai lagi
+ * sebagai argumen rekursi berikutnya (Ackermann).
+ */
+tulis("--- rekursi dalam ---");
+
+/* 1. Rekursi linear dalam: 400 bingkai tumpukan. */
+fungsi turun(n) {
+  jika (n === 0) { balik 0; }
+  balik 1 + turun(n - 1);
+}
+tulis(turun(400));
+
+/* 2. Rekursi saling-panggil: genap() dan ganjil() memanggil satu sama lain.
+ * Perhatikan ganjil() dipakai oleh genap() SEBELUM ganjil() dideklarasikan. */
+fungsi genap(n) {
+  jika (n === 0) { balik benar; }
+  balik ganjil(n - 1);
+}
+fungsi ganjil(n) {
+  jika (n === 0) { balik salah; }
+  balik genap(n - 1);
+}
+tulis(genap(64));
+tulis(ganjil(64));
+tulis(genap(101));
+
+/* 3. Ackermann: rekursi bersarang, nilai balik rekursi jadi argumen rekursi. */
+fungsi ack(m, n) {
+  jika (m === 0) { balik n + 1; }
+  jika (n === 0) { balik ack(m - 1, 1); }
+  balik ack(m - 1, ack(m, n - 1));
+}
+tulis(ack(2, 3));
+tulis(ack(3, 3));
+
+/* 4. Rekursi yang menyusuri array bersarang sampai dasar. */
+fungsi jumlahDalam(a) {
+  isi t = 0;
+  isi i;
+  untuk (i = 0; i < a.panjang; i++) {
+    jika (tipe a[i] === "untaian") { t = t + jumlahDalam(a[i]); }
+    lainnya { t = t + a[i]; }
+  }
+  balik t;
+}
+tulis(jumlahDalam([1, [2, [3, [4, [5]]]], 6]));

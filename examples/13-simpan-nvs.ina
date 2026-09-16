@@ -1,0 +1,65 @@
+// ============================================================
+//  13 - Menyimpan nilai yang bertahan (NVS / Preferences)
+// ------------------------------------------------------------
+//  Peragaan        : NVS.begin/end, putInt/getInt, putString/getString,
+//                    putBool/getBool, isKey, remove, freeEntries
+//  Perangkat keras : tidak ada
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/13-simpan-nvs.ina")
+//                    lalu tekan RESET dan jalankan lagi - angkanya naik.
+// ============================================================
+
+// NVS menyimpan data di partisi flash khusus. Isinya bertahan melewati
+// reset, deep sleep, bahkan pemutusan daya, tetapi HILANG bila firmware
+// diunggah ulang dengan menghapus flash (erase).
+
+// PERINGATAN: namespace "wifi" DITOLAK oleh firmware. Nama itu dipakai
+// untuk menyimpan SSID dan sandi papan, jadi NVS.begin("wifi") akan
+// mengembalikan `salah` dan mencetak galat - justru supaya konfigurasi
+// jaringanmu tidak bisa dirusak skrip. Pakai nama namespace lain.
+//
+// Nilai balik saat gagal: seluruh NVS.* yang melaporkan status memakai
+// `salah`, bukan `kosong` dan bukan -1.
+
+jika (NVS.begin("contoh", salah) === salah) {
+  tulis("Gagal membuka namespace NVS.");
+} lainnya {
+
+  // --- Pencacah berapa kali skrip ini dijalankan ---
+  isi n = NVS.getInt("jalan", 0);
+  n = n + 1;
+  NVS.putInt("jalan", n);
+  tulis("Skrip ini sudah dijalankan", n, "kali.");
+
+  // --- Menyimpan teks ---
+  jika (NVS.isKey("nama") === salah) {
+    NVS.putString("nama", "papan-baik");
+    tulis("Menyimpan nama untuk pertama kali.");
+  }
+  tulis("Nama tersimpan:", NVS.getString("nama", "(belum ada)"));
+
+  // --- Menyimpan pecahan dan boolean ---
+  NVS.putFloat("kalibrasi", 1.075);
+  NVS.putBool("aktif", benar);
+  tulis("Kalibrasi:", NVS.getFloat("kalibrasi", 1));
+  tulis("Aktif    :", NVS.getBool("aktif", salah));
+
+  // --- Menghapus satu kunci ---
+  NVS.putInt("sementara", 42);
+  tulis("Kunci sementara ada?", NVS.isKey("sementara"));
+  NVS.remove("sementara");
+  tulis("Sesudah dihapus    ?", NVS.isKey("sementara"));
+
+  tulis("Slot NVS tersisa:", NVS.freeEntries());
+
+  // Bukti namespace "wifi" memang ditolak:
+  tulis("");
+  tulis("Mencoba NVS.begin(\"wifi\") - seharusnya ditolak:");
+  tulis("hasilnya:", NVS.begin("wifi", benar));
+
+  // Buka kembali namespace kita, lalu tutup supaya data benar-benar
+  // tertulis ke flash.
+  NVS.begin("contoh", salah);
+  NVS.end();
+  tulis("Selesai. Tekan RESET lalu jalankan lagi - angkanya akan naik.");
+}

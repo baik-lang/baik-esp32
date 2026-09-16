@@ -1,0 +1,50 @@
+/* KASUS REGRESI — JSON.stringify HARUS menghasilkan JSON yang SAH.
+ *
+ * Dulu JSON.stringify menuliskan boolean dan null memakai kata Indonesia
+ * (benar / salah / kosong) alih-alih literal JSON (true / false / null):
+ *
+ *     JSON.stringify({ ya: benar })   ->   {"ya":benar}     <- BUKAN JSON sah
+ *
+ * Sebabnya to_json_or_debug() di src/baik/baik_json.c meneruskan seluruh
+ * nilai dasar ke baik_to_string(), padahal baik_to_string() memang bertugas
+ * menghasilkan teks UNTUK MANUSIA. Akibatnya HTTP.getJSON() dan pertukaran
+ * data dengan sistem lain menerima JSON yang tidak bisa diurai.
+ *
+ * Sekarang dua jalur itu dipisah:
+ *   - jalur tampilan-untuk-manusia (tulis()/baik_jprintf) tetap Indonesia,
+ *   - jalur serialisasi JSON memakai literal JSON.
+ *
+ * CATATAN: pulang-pergi penuh JSON.parse(JSON.stringify(x)) untuk boolean
+ * dan null BELUM bisa diuji di sini. Pengurai JSON (frozen) di
+ * src/baik/baik_em_common.c masih membandingkan literal dengan kata
+ * Indonesia, sehingga JSON.parse("true") pun ditolak. Lihat catatan di
+ * laporan perbaikan; kasus itu akan ditambahkan setelah pengurai dibetulkan. */
+tulis("--- json boolean sah ---");
+
+/* nilai dasar */
+tulis(JSON.stringify(benar));
+tulis(JSON.stringify(salah));
+tulis(JSON.stringify(kosong));
+
+/* takterdefinisi tetap menghasilkan string kosong, seperti JavaScript */
+tulis(JSON.stringify(takterdefinisi));
+
+/* di dalam object, bercampur dengan angka dan huruf */
+tulis(JSON.stringify({ a: benar, b: salah, c: kosong, d: 1, e: "x" }));
+
+/* di dalam array */
+tulis(JSON.stringify([benar, salah, kosong, 1, "x"]));
+
+/* bersarang */
+tulis(JSON.stringify({ luar: { dalam: benar }, daftar: [kosong, salah] }));
+
+/* REGRESI: tulis() TIDAK BOLEH ikut berubah — tetap bahasa Indonesia. */
+tulis("--- tulis tetap Indonesia ---");
+tulis(benar);
+tulis(salah);
+tulis(kosong);
+tulis(takterdefinisi);
+
+/* REGRESI: angka dan huruf tidak tersentuh. */
+tulis(JSON.stringify(42), JSON.stringify(-7), JSON.stringify(1.5));
+tulis(JSON.stringify("halo"));

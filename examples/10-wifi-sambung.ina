@@ -1,0 +1,59 @@
+// ============================================================
+//  10 - Menyambung ke WiFi
+// ------------------------------------------------------------
+//  Peragaan        : WiFi.mode, WiFi.begin, WiFi.tungguKoneksi,
+//                    WiFi.localIP, WiFi.RSSI, WiFi.statusText
+//  Perangkat keras : tidak ada; hanya butuh jaringan WiFi 2,4 GHz
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/10-wifi-sambung.ina")
+//
+//  UBAH DULU dua baris di bawah ini dengan SSID dan sandi jaringanmu.
+// ============================================================
+
+isi SSID  = "NamaWiFiku";
+isi SANDI = "sandirahasia";
+
+// PERINGATAN: firmware ini mungkin sudah tersambung sendiri memakai
+// kredensial yang disimpan lewat halaman konfigurasi web. Memanggil
+// WiFi.begin() akan MEMUTUS sambungan itu, sehingga editor web tidak
+// bisa diakses sampai sambungan baru berhasil. Kalau papan hanya bisa
+// kamu jangkau lewat WiFi, jalankan skrip ini dari REPL serial.
+
+tulis("MAC papan :", WiFi.macAddress());
+tulis("Menyambung ke", SSID, "...");
+
+WiFi.mode(WIFI_STA);
+WiFi.setHostname("baik-esp32");
+WiFi.begin(SSID, SANDI);
+
+// tungguKoneksi memblokir sampai tersambung atau kehabisan waktu.
+jika (WiFi.tungguKoneksi(20000)) {
+  tulis("Tersambung!");
+  tulis("  SSID       :", WiFi.SSID());
+  tulis("  Kanal      :", WiFi.channel());
+  tulis("  IP         :", WiFi.localIP());
+  tulis("  Gateway    :", WiFi.gatewayIP());
+  tulis("  Subnet     :", WiFi.subnetMask());
+  tulis("  DNS        :", WiFi.dnsIP());
+  tulis("  RSSI       :", WiFi.RSSI(), "dBm");
+
+  // Kualitas sinyal kasar berdasarkan RSSI.
+  isi r = WiFi.RSSI();
+  jika (r > -50) {
+    tulis("  Sinyal     : sangat kuat");
+  } lainnya jika (r > -67) {
+    tulis("  Sinyal     : bagus");
+  } lainnya jika (r > -80) {
+    tulis("  Sinyal     : cukup");
+  } lainnya {
+    tulis("  Sinyal     : lemah");
+  }
+
+  tulis("");
+  tulis("CATATAN: selama radio WiFi hidup, pin ADC2 TIDAK bisa dibaca.");
+  tulis("Pakai pin ADC1 (lihat daftarPin(CAP_ADC1)) bila perlu analogRead.");
+} lainnya {
+  tulis("Gagal tersambung. Status:", WiFi.statusText(), "(", WiFi.status(), ")");
+  tulis("Periksa: SSID benar? Sandi benar? Jaringannya 2,4 GHz?");
+  tulis("ESP32 TIDAK bisa memakai jaringan 5 GHz.");
+}

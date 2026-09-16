@@ -62,6 +62,11 @@ namespace ESP32Console
                 return false;
             }
 
+            /* Catat nama perintah ke daftar internal. Daftar inilah yang dipakai
+             * REPL untuk membedakan "perintah konsol" dari "kode BAIK", sehingga
+             * daftarnya selalu sinkron dengan perintah yang benar-benar terdaftar. */
+            catatPerintah(cmd->command);
+
             return true;
         }
 
@@ -110,6 +115,27 @@ namespace ESP32Console
         void registerVFSCommands();
 
         void registerGPIOCommands();
+
+        /**
+         * @brief Daftarkan perintah khusus BAIK: `pinout`, `api`, dan `run <berkas>`.
+         *        Panggil setelah begin(), karena esp_console harus sudah diinisialisasi.
+         */
+        void registerBaikCommands();
+
+        /**
+         * @brief Catat satu nama perintah ke daftar perintah konsol yang terdaftar.
+         *        Dipanggil otomatis oleh registerCommand(); perlu dipanggil manual
+         *        hanya untuk perintah yang didaftarkan langsung lewat esp_console
+         *        (contoh: `help` dari esp_console_register_help_command()).
+         */
+        static void catatPerintah(const char *command);
+
+        /**
+         * @brief Benar bila `token` (kata PERTAMA dari baris masukan) adalah nama
+         *        perintah konsol yang terdaftar. Dipakai REPL untuk memutuskan
+         *        apakah baris dijalankan sebagai perintah atau sebagai kode BAIK.
+         */
+        static bool adalahPerintah(const char *token);
 
         /**
          * @brief Set the command prompt. Default is "ESP32>".

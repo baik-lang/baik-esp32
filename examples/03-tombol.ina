@@ -1,0 +1,51 @@
+// ============================================================
+//  03 - Membaca tombol
+// ------------------------------------------------------------
+//  Peragaan        : INPUT_PULLUP, digitalRead, anti-pantul (debounce)
+//  Perangkat keras : tombol BOOT bawaan papan (GPIO0). Atau tombol
+//                    sendiri antara GPIO pilihanmu dan GND.
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/03-tombol.ina")
+// ============================================================
+
+isi PIN_TOMBOL = 0;        // tombol BOOT pada kedua devkit
+
+// INPUT_PULLUP: pin ditarik ke HIGH oleh resistor internal, dan
+// menjadi LOW ketika tombol ditekan (karena tombol menyambung ke GND).
+pinMode(PIN_TOMBOL, INPUT_PULLUP);
+
+// ledBawaan() dipakai (bukan digitalWrite(LED_BUILTIN,...)) supaya
+// contoh ini juga menyala di ESP32-S3, yang LED bawaannya WS2812.
+
+tulis("Tekan tombol BOOT. Skrip berhenti sendiri setelah 200 pembacaan");
+tulis("(sekitar 10 detik) atau setelah tombol ditekan 5 kali.");
+
+isi hitung    = 0;
+isi terakhir  = HIGH;
+
+untuk (isi i = 0; i < 200; i++) {
+  isi sekarang = digitalRead(PIN_TOMBOL);
+
+  jika (sekarang === LOW && terakhir === HIGH) {
+    hitung++;
+    tulis("Ditekan! Jumlah:", hitung);
+    ledBawaan(benar);
+    delay(50);              // anti-pantul sederhana
+  }
+
+  jika (sekarang === HIGH && terakhir === LOW) {
+    ledBawaan(salah);
+  }
+
+  terakhir = sekarang;
+
+  jika (hitung >= 5) {
+    tulis("Sudah 5 kali, berhenti.");
+    berhenti;
+  }
+
+  delay(50);
+}
+
+ledBawaan(salah);
+tulis("Selesai. Total tekan:", hitung);

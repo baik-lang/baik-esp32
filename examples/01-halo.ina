@@ -1,0 +1,31 @@
+// ============================================================
+//  01 - Halo, BAIK!
+// ------------------------------------------------------------
+//  Peragaan        : mencetak teks, membaca identitas papan
+//  Perangkat keras : tidak ada, cukup papan + kabel USB
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/01-halo.ina")
+// ============================================================
+
+tulis("Halo, BAIK!");
+tulis("");
+
+tulis("Papan       :", BOARD);
+tulis("Chip        :", CHIP);
+tulis("Model       :", ESP.getChipModel());
+tulis("Revisi      :", ESP.getChipRevision());
+tulis("Inti CPU    :", ESP.getChipCores());
+tulis("Frekuensi   :", getCpuFrequencyMhz(), "MHz");
+tulis("Versi SDK   :", ESP.getSdkVersion());
+tulis("Heap bebas  :", ESP.getFreeHeap(), "byte");
+tulis("Flash       :", ESP.getFlashChipSize(), "byte");
+tulis("Nyala sejak :", millis(), "ms lalu");
+tulis("");
+
+// Ingat: BAIK melarang konversi tipe implisit, jadi "teks" + angka
+// adalah GALAT. Cetaklah dengan beberapa argumen seperti di atas,
+// atau ubah angka menjadi teks secara eksplisit:
+tulis("Heap sebagai teks: " + JSON.stringify(ESP.getFreeHeap()));
+
+tulis("");
+tulis("Selesai. Ketik  pinout()  untuk melihat tabel pin papan ini.");

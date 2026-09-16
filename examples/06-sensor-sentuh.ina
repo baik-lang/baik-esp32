@@ -1,0 +1,53 @@
+// ============================================================
+//  06 - Sensor sentuh kapasitif
+// ------------------------------------------------------------
+//  Peragaan        : touchRead, touchSetCycles, kalibrasi ambang
+//  Perangkat keras : sepotong kabel jumper (10-20 cm) atau pelat logam
+//                    kecil yang ditancapkan ke pin sentuh. Sentuh ujung
+//                    kabelnya dengan jari.
+//  Papan didukung  : ESP32 (T0..T9), ESP32-S3 (T1..T14)
+//  Jalankan        : jalankan("/06-sensor-sentuh.ina")
+// ============================================================
+
+isi pinSentuh = daftarPin(CAP_TOUCH);
+
+jika (pinSentuh.panjang === 0) {
+  tulis("Papan ini tidak punya pin sentuh.");
+} lainnya {
+  isi PIN = pinSentuh[0];
+  tulis("Memakai GPIO", PIN, "sebagai sensor sentuh");
+  tulis("Jangan sentuh dulu - sedang mengukur nilai diam...");
+
+  // Siklus lebih panjang = pembacaan lebih stabil (tapi lebih lambat).
+  touchSetCycles(0x1000, 0x1000);
+
+  // Kalibrasi: rata-rata 20 pembacaan saat tidak disentuh.
+  isi jumlah = 0;
+  untuk (isi i = 0; i < 20; i++) { jumlah = jumlah + touchRead(PIN); delay(50); }
+  isi diam = jumlah / 20;
+  tulis("Nilai diam:", diam);
+
+  // PENTING - arah perubahan nilai BERBEDA antar papan:
+  //   ESP32    : nilai TURUN saat disentuh  -> ambang = diam * 0,6
+  //   ESP32-S3 : nilai NAIK  saat disentuh  -> ambang = diam * 1,4
+  isi turunSaatSentuh = benar;
+  jika (CHIP === "ESP32-S3") { turunSaatSentuh = salah; }
+
+  isi ambang = diam * 0.6;
+  jika (turunSaatSentuh === salah) { ambang = diam * 1.4; }
+  tulis("Ambang:", ambang);
+
+  tulis("Sekarang sentuh kabelnya. 60 pembacaan (sekitar 12 detik).");
+  untuk (isi j = 0; j < 60; j++) {
+    isi n = touchRead(PIN);
+    isi kena = salah;
+    jika (turunSaatSentuh) {
+      jika (n < ambang) { kena = benar; }
+    } lainnya {
+      jika (n > ambang) { kena = benar; }
+    }
+    jika (kena) { tulis("SENTUH! nilai:", n); }
+    delay(200);
+  }
+  tulis("Selesai.");
+}

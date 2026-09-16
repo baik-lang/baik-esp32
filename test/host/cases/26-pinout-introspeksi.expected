@@ -1,0 +1,16 @@
+--- introspeksi pin --- 
+gpio = 2 
+label = D2 
+pin 2 output? benar 
+pin 34 output? salah 
+pin 34 input? benar 
+pin 25 dac? benar 
+pin 2 dac? salah 
+pin 99 apa pun? salah 
+pin ADC1 = [32,33,34,35,36,39] 
+pin DAC = [25,26] 
+pin FLASH = [6,7,8,9,10,11] 
+pinInfo(99) = kosong 
+BOARD = host-shim (tiruan esp32doit-devkit-v1) 
+CHIP = ESP32-HOST-SHIM 
+[keluar=0]

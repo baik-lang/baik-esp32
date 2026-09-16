@@ -1,0 +1,20 @@
+/* Uji fungsi: deklarasi, argumen, fungsi anonim, nilai balik kosong. */
+tulis("--- fungsi ---");
+fungsi tambah(a, b) {
+  balik a + b;
+}
+tulis(tambah(2, 3));
+tulis(tambah(-1, 1));
+
+fungsi tanpaBalik() {
+  tulis("dijalankan");
+}
+tulis(tanpaBalik());   /* fungsi tanpa balik -> takterdefinisi */
+
+isi kali = fungsi (a, b) { balik a * b; };
+tulis(kali(6, 7));
+
+fungsi banyakArg(a, b, c) {
+  balik a + b + c;
+}
+tulis(banyakArg(1, 2, 3));

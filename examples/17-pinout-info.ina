@@ -1,0 +1,90 @@
+// ============================================================
+//  17 - Menjelajahi pinout papan
+// ------------------------------------------------------------
+//  Peragaan        : pinout, pinInfo, pinCaps, pinPunya, daftarPin
+//  Perangkat keras : tidak ada
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/17-pinout-info.ina")
+// ============================================================
+
+tulis("=== Papan:", BOARD, "| Chip:", CHIP, "===");
+tulis("");
+
+// --- Menghitung pin per kapabilitas ---------------------------------
+fungsi laporkan(nama, bitmask) {
+  isi daftar = daftarPin(bitmask);
+  tulis(nama, ":", daftar.panjang, "pin");
+  jika (daftar.panjang > 0) {
+    isi baris = "   ";
+    untuk (isi i = 0; i < daftar.panjang; i++) {
+      baris = baris + " " + JSON.stringify(daftar[i]);
+    }
+    tulis(baris);
+  }
+}
+
+laporkan("Bisa OUTPUT ", CAP_OUTPUT);
+laporkan("Bisa INPUT  ", CAP_INPUT);
+laporkan("ADC unit 1  ", CAP_ADC1);
+laporkan("ADC unit 2  ", CAP_ADC2);
+laporkan("DAC         ", CAP_DAC);
+laporkan("Sentuh      ", CAP_TOUCH);
+laporkan("RTC (wakeup)", CAP_RTC);
+laporkan("PWM         ", CAP_PWM);
+laporkan("Strapping   ", CAP_STRAP);
+laporkan("SPI flash   ", CAP_FLASH);
+laporkan("USB         ", CAP_USB);
+
+tulis("");
+
+// --- Keterangan rinci satu pin --------------------------------------
+fungsi rinci(gpio) {
+  isi info = pinInfo(gpio);
+  jika (info === kosong) {
+    tulis("GPIO", gpio, "tidak ada di papan ini.");
+  } lainnya {
+    tulis("GPIO", info.gpio, "(label", info.label + ")");
+    tulis("   bitmask kapabilitas:", info.caps.panjang, "buah");
+    untuk (isi i = 0; i < info.caps.panjang; i++) {
+      tulis("     -", info.caps[i]);
+    }
+    jika (info.adc.unit > 0) {
+      tulis("   ADC unit", info.adc.unit, "kanal", info.adc.channel);
+    }
+    jika (info.touch >= 0) { tulis("   Kanal sentuh T" + JSON.stringify(info.touch)); }
+    jika (info.dac > 0)    { tulis("   Kanal DAC", info.dac); }
+    jika (info.rtc >= 0)   { tulis("   RTC GPIO", info.rtc); }
+    jika (info.note !== kosong) { tulis("   Catatan:", info.note); }
+  }
+}
+
+tulis("=== Rincian beberapa pin penting ===");
+rinci(LED_BUILTIN);
+rinci(0);            // tombol BOOT
+rinci(SDA);
+rinci(SCL);
+
+tulis("");
+
+// --- Mencari pin yang aman untuk dipakai bebas -----------------------
+// Pin "aman" = bisa input DAN output, bukan strapping, bukan pin flash.
+tulis("=== Pin serbaguna yang relatif aman ===");
+isi semua = daftarPin();
+isi aman  = [];
+untuk (isi k = 0; k < semua.panjang; k++) {
+  isi g = semua[k];
+  jika (pinPunya(g, CAP_INPUT | CAP_OUTPUT)) {
+    jika (pinPunya(g, CAP_STRAP) === salah) {
+      jika (pinPunya(g, CAP_FLASH) === salah) {
+        aman.push(g);
+      }
+    }
+  }
+}
+tulis("Ada", aman.panjang, "pin serbaguna:");
+isi t = "   ";
+untuk (isi m = 0; m < aman.panjang; m++) { t = t + " " + JSON.stringify(aman[m]); }
+tulis(t);
+
+tulis("");
+tulis("Untuk tabel lengkap dan rapi, panggil: pinout()");

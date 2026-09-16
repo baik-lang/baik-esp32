@@ -1,0 +1,43 @@
+// ============================================================
+//  04 - Redup-terang LED dengan PWM
+// ------------------------------------------------------------
+//  Peragaan        : analogWrite, ledcAttach, ledcWrite, ledcRead
+//  Perangkat keras : LED bawaan, atau LED + resistor 220 ohm di GPIO2
+//  Papan didukung  : ESP32 (16 kanal LEDC), ESP32-S3 (8 kanal LEDC)
+//  Jalankan        : jalankan("/04-pwm-fade.ina")
+// ============================================================
+
+isi PIN_LED = LED_BUILTIN;
+
+// --- Cara 1: analogWrite, gaya Arduino, kanal dipilih otomatis -----
+tulis("Cara 1: analogWrite (0..255)");
+untuk (isi d = 0; d <= 255; d += 5) {
+  analogWrite(PIN_LED, d);
+  delay(10);
+}
+untuk (isi e = 255; e >= 0; e -= 5) {
+  analogWrite(PIN_LED, e);
+  delay(10);
+}
+analogWrite(PIN_LED, 0);
+
+// --- Cara 2: LEDC langsung, resolusi dan frekuensi kita tentukan ---
+// ledcAttach(pin, frekuensiHz, bitResolusi)
+// 10 bit berarti duty 0..1023 -> gradasi jauh lebih halus.
+tulis("Cara 2: LEDC 5 kHz, 10 bit (duty 0..1023)");
+ledcAttach(PIN_LED, 5000, 10);
+tulis("Frekuensi nyata:", ledcReadFreq(PIN_LED), "Hz");
+
+untuk (isi i = 0; i < 3; i++) {
+  untuk (isi d2 = 0; d2 <= 1023; d2 += 8) { ledcWrite(PIN_LED, d2); delay(4); }
+  untuk (isi e2 = 1023; e2 >= 0; e2 -= 8) { ledcWrite(PIN_LED, e2); delay(4); }
+}
+
+ledcWrite(PIN_LED, 0);
+tulis("Duty terakhir:", ledcRead(PIN_LED));
+
+// Lepaskan pin dari LEDC supaya bisa dipakai digitalWrite lagi.
+ledcDetachPin(PIN_LED);
+pinMode(PIN_LED, OUTPUT);
+digitalWrite(PIN_LED, LOW);
+tulis("Selesai.");

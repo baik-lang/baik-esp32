@@ -1,0 +1,8 @@
+/* KASUS UJI NEGATIF — harus GAGAL.
+ *
+ * Operator `delete` belum diimplementasikan parser BAIK, jadi properti
+ * object tidak bisa dihapus dari sisi skrip. */
+tulis("sebelum delete");
+isi o = { a: 1, b: 2 };
+delete o.a;
+tulis("baris ini TIDAK boleh tercetak", JSON.stringify(o));

@@ -1,0 +1,12 @@
+/* Uji pola kedip (blink) — bentuk skrip yang sama dipakai di papan. */
+tulis("--- kedip ---");
+isi pin = LED_BUILTIN;
+pinMode(pin, OUTPUT);
+isi i;
+untuk (i = 0; i < 3; i++) {
+  digitalWrite(pin, HIGH);
+  delay(100);
+  digitalWrite(pin, LOW);
+  delay(100);
+}
+tulis("total waktu (ms) =", millis());

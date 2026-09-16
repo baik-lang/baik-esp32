@@ -15,8 +15,21 @@
 #include "ESP32Console/Helpers/InputParser.h"
 #include "strings.h"
 #include "baik.h"
+#include "esp32/baik_esp32.h"
+
+#include <stdlib.h>
+#include <string.h>
+#include <new>
 
 static const char *TAG = "ESP32Console";
+
+/* Pointer interpreter BAIK milik task REPL.
+ *
+ * Fungsi perintah esp_console bertanda tangan `int(int argc, char **argv)` dan
+ * TIDAK menerima konteks apa pun, sehingga pointer interpreter harus disimpan
+ * di lingkup berkas agar perintah seperti `run` bisa memakainya. Diisi sekali
+ * di Console::repl_task() sebelum REPL berjalan. */
+static struct baik *s_baik = NULL;
 
 using namespace ESP32Console::Commands;
 
@@ -67,6 +80,59 @@ namespace ESP32Console
         registerCommand(getAnalogReadCommand());
     }
 
+    /* ---- Daftar nama perintah konsol yang benar-benar terdaftar -------------
+     *
+     * esp_console tidak menyediakan API publik untuk menelusuri perintah yang
+     * sudah terdaftar, jadi kita mencatatnya sendiri. Semua registrasi melewati
+     * Console::registerCommand() (lihat console.h), sehingga daftar ini otomatis
+     * ikut bertambah saat registerVFSCommands()/registerGPIOCommands()/
+     * registerNetworkCommands()/registerBaikCommands() dipanggil. Tidak ada lagi
+     * tabel nama yang ditulis tangan dan gampang basi. */
+#define BAIK_MAKS_PERINTAH 64
+    static const char *s_daftar_perintah[BAIK_MAKS_PERINTAH];
+    static size_t s_jumlah_perintah = 0;
+
+    bool Console::adalahPerintah(const char *token)
+    {
+        if (token == nullptr || token[0] == '\0')
+        {
+            return false;
+        }
+
+        for (size_t i = 0; i < s_jumlah_perintah; i++)
+        {
+            if (strcmp(s_daftar_perintah[i], token) == 0)
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    void Console::catatPerintah(const char *command)
+    {
+        if (command == nullptr || command[0] == '\0' || adalahPerintah(command))
+        {
+            return;
+        }
+
+        if (s_jumlah_perintah >= BAIK_MAKS_PERINTAH)
+        {
+            log_e("Daftar perintah penuh, '%s' tidak dicatat", command);
+            return;
+        }
+
+        /* Salin namanya: struct esp_console_cmd_t yang dipakai pemanggil bisa
+         * berupa objek sementara, jadi pointer aslinya belum tentu awet. */
+        char *salinan = strdup(command);
+        if (salinan == nullptr)
+        {
+            log_e("Kehabisan memori saat mencatat perintah '%s'", command);
+            return;
+        }
+        s_daftar_perintah[s_jumlah_perintah++] = salinan;
+    }
+
     void Console::beginCommon()
     {
         /* Tell linenoise where to get command completions and hints */
@@ -87,6 +153,9 @@ namespace ESP32Console
 
         // Register core commands like echo
         esp_console_register_help_command();
+        /* `help` didaftarkan langsung oleh esp_console (tidak lewat
+         * registerCommand()), jadi catat namanya secara manual. */
+        catatPerintah("help");
         registerCoreCommands();
     }
 
@@ -177,43 +246,110 @@ namespace ESP32Console
         optind = 0;
     }
 
-    bool stringExistsInArray(const char *arr[], int size, const char *target)
-    {
-        for (int i = 0; i < size; i++)
-        {
-            if (strcmp(arr[i], target) == 0)
-            {
-                return true; // String exists in the array
-            }
-        }
-        return false; // String does not exist in the array
-    };
-
+    /* Baca seluruh isi berkas SPIFFS ke dalam `content`.
+     * Sengaja TIDAK mencetak apa pun: pemanggillah yang tahu apakah berkas yang
+     * hilang itu wajar (autorun /baik.ina) atau sebuah galat (perintah `run`). */
     bool readFileToCStr(const char *path, String &content)
     {
-        // Open file for reading
         File file = SPIFFS.open(path, "r");
-        if (!file)
+        if (!file || file.isDirectory())
         {
-            Serial.println("Failed to open file for reading");
             return false;
         }
 
-        // Allocate memory for the file content
         size_t fileSize = file.size();
-        char *fileBuffer = new char[fileSize + 1]; // +1 for null terminator
+        char *fileBuffer = new (std::nothrow) char[fileSize + 1]; // +1 untuk NUL
+        if (fileBuffer == nullptr)
+        {
+            file.close();
+            return false;
+        }
 
-        // Read the file content
-        file.readBytes(fileBuffer, fileSize);
-        fileBuffer[fileSize] = '\0'; // Null-terminate the C-style string
+        size_t dibaca = file.readBytes(fileBuffer, fileSize);
+        fileBuffer[dibaca] = '\0';
 
-        // Store the content in the provided String variable
         content = String(fileBuffer);
 
-        // Clean up
         delete[] fileBuffer;
         file.close();
         return true;
+    }
+
+    /* ---- Perintah konsol khusus BAIK ---------------------------------------
+     *
+     * Tanda tangan esp_console adalah int(int argc, char **argv) dan tidak
+     * membawa konteks, jadi pointer interpreter diambil dari s_baik. */
+
+    static int cmdPinout(int argc, char **argv)
+    {
+        (void) argc;
+        (void) argv;
+        e32_print_pinout();
+        return EXIT_SUCCESS;
+    }
+
+    static int cmdApi(int argc, char **argv)
+    {
+        (void) argc;
+        (void) argv;
+        e32_print_api();
+        return EXIT_SUCCESS;
+    }
+
+    static int cmdRun(int argc, char **argv)
+    {
+        if (argc < 2)
+        {
+            printf("Pemakaian: run <berkas>\n"
+                   "Contoh   : run /baik.ina\n");
+            return EXIT_FAILURE;
+        }
+
+        if (s_baik == nullptr)
+        {
+            printf("Galat: interpreter BAIK belum siap.\n");
+            return EXIT_FAILURE;
+        }
+
+        /* Terima "baik.ina", "/baik.ina", maupun "/spiffs/baik.ina".
+         * API Arduino SPIFFS memakai path tanpa awalan mount "/spiffs". */
+        String path = argv[1];
+        if (path.startsWith("/spiffs"))
+        {
+            path = path.substring(strlen("/spiffs"));
+        }
+        if (!path.startsWith("/"))
+        {
+            path = "/" + path;
+        }
+
+        String isi;
+        if (!readFileToCStr(path.c_str(), isi))
+        {
+            printf("Galat: berkas '%s' tidak ditemukan atau tidak bisa dibaca.\n",
+                   path.c_str());
+            return EXIT_FAILURE;
+        }
+
+        baik_val_t hasil = 0;
+        baik_err_t err = baik_exec(s_baik, isi.c_str(), &hasil);
+        if (err != BAIK_OK)
+        {
+            baik_print_error(s_baik, stdout, NULL, 1);
+            return EXIT_FAILURE;
+        }
+
+        return EXIT_SUCCESS;
+    }
+
+    void Console::registerBaikCommands()
+    {
+        registerCommand("pinout", &cmdPinout,
+                        "Tampilkan tabel pinout papan ini beserta kapabilitas tiap GPIO");
+        registerCommand("api", &cmdApi,
+                        "Tampilkan ringkasan seluruh fungsi BAIK-ESP32 yang tersedia");
+        registerCommand("run", &cmdRun,
+                        "Jalankan berkas skrip BAIK dari SPIFFS", "<berkas.ina>");
     }
 
     void Console::repl_task(void *args)
@@ -236,31 +372,36 @@ namespace ESP32Console
 
         setvbuf(stdin, NULL, _IONBF, 0);
 
-        // BAIK Code Initialize 
+        // ---- Inisialisasi interpreter BAIK ---------------------------------
         struct baik *baik = baik_create();
+        s_baik = baik; /* dipakai perintah konsol `run` dan poll interupsi */
+
+        /* Daftarkan SELURUH API ESP32 (konstanta, GPIO, sistem, bus, jaringan,
+         * berkas) ke object global interpreter. Harus dilakukan sebelum skrip
+         * apa pun dijalankan, termasuk sebelum autorun /baik.ina. */
+        baik_esp32_register(baik);
+
         baik_err_t err = BAIK_OK;
         baik_val_t res = 0;
 
-        // Variable to hold the file content
+        // ---- Autorun berkas /baik.ina bila ada ------------------------------
         String fileContent;
-        // Read the file and store the content in the variable
-        bool isBaikFileExists = readFileToCStr("/baik.ina", fileContent);
-        if (isBaikFileExists)
+        if (readFileToCStr("/baik.ina", fileContent))
         {
             printf("\r\n"
-                    "Kode BAIK ditemukan dan dijalankan.....\r\n"
-                    "---------------------------------------\r\n");
-            if (err == BAIK_OK)
-            {
-                if (res == 0)
-                    baik_exec(baik, fileContent.c_str(), NULL);
-            }
-            else
+                   "Kode BAIK ditemukan dan dijalankan.....\r\n"
+                   "---------------------------------------\r\n");
+
+            err = baik_exec(baik, fileContent.c_str(), &res);
+            if (err != BAIK_OK)
             {
                 baik_print_error(baik, stdout, NULL, 1);
+                /* Galat pada autorun tidak boleh mematikan REPL. */
+                err = BAIK_OK;
             }
+
             printf("\r\n"
-                    "---------------------------------------\r\n");
+                   "---------------------------------------\r\n");
         }
 
         /* This message shall be printed here and not earlier as the stdout
@@ -268,7 +409,8 @@ namespace ESP32Console
         printf("\r\n"
                 "Selamat datang di BAIK X.\r\n"
                 "Ketik 'help' untuk melihat daftar perintah.\r\n"
-                "Gunakan tombol UP/DOWN untuk navigasi histori penrintah.\r\n");
+                "Ketik 'api' untuk daftar fungsi ESP32, 'pinout' untuk peta pin.\r\n"
+                "Gunakan tombol UP/DOWN untuk navigasi histori perintah.\r\n");
 
         // Probe terminal status
         int probe_status = linenoiseProbe();
@@ -289,6 +431,11 @@ namespace ESP32Console
 
         while (1)
         {
+            /* Jalankan callback interupsi/sentuh yang tertunda. WAJIB dari task
+             * konsol (bukan dari ISR) karena interpreter BAIK tidak reentrant.
+             * Dipanggil tepat sebelum menunggu baris berikutnya. */
+            baik_esp32_poll_interrupts(s_baik);
+
             String prompt = console.prompt_;
 
             // Insert current PWD into prompt if needed
@@ -316,67 +463,81 @@ namespace ESP32Console
             // Interpolate the input line
             String interpolated_line = interpolateLine(line);
 
-            // command register
-            const char *arr[] = {"help", "meminfo", "sysinfo", "clear", "history", "restart"};
-            int size = sizeof(arr) / sizeof(arr[0]);
+            /* Lewati baris kosong / hanya spasi. */
+            String baris = interpolated_line;
+            baris.trim();
+            if (baris.length() == 0)
+            {
+                linenoiseFree(line);
+                continue;
+            }
 
-            // char inputString[sizeof(interpolated_line.length() + 1)];
-            // strcpy(inputString, interpolated_line.c_str());
-            // const char *target = strtok(inputString, " ");
-            const char *target = interpolated_line.c_str();
-            bool isCommand = stringExistsInArray(arr, size, target);
+            /* Deteksi perintah konsol memakai KATA PERTAMA saja.
+             * Sebelumnya seluruh baris dibandingkan, sehingga "help gpio" atau
+             * "cat /x" tidak pernah dikenali sebagai perintah dan malah
+             * dilempar ke interpreter BAIK. */
+            int batas = baris.indexOf(' ');
+            int batasTab = baris.indexOf('\t');
+            if (batasTab >= 0 && (batas < 0 || batasTab < batas))
+            {
+                batas = batasTab;
+            }
+            String kataPertama = (batas < 0) ? baris : baris.substring(0, batas);
 
-            /* Try to run the command */
-            int ret;
-            esp_err_t esp_err;
-
-            // printf("%s",isCommand ? "true" : "false");
+            /* Daftar perintah diambil dari registrasi esp_console yang nyata
+             * (lihat Console::catatPerintah), jadi perintah VFS/GPIO/jaringan/
+             * BAIK ikut terdeteksi begitu diaktifkan. */
+            bool isCommand = Console::adalahPerintah(kataPertama.c_str());
 
             if (isCommand)
             {
-                esp_err = esp_console_run(interpolated_line.c_str(), &ret);
-            }
-            else
-            {
-                if (err == BAIK_OK)
-                {
-                    if (res == 0)
-                        baik_exec(baik, interpolated_line.c_str(), NULL);
-                }
-                else
-                {
-                    baik_print_error(baik, stdout, NULL, 1);
-                }
-            }
+                /* Jalankan sebagai perintah konsol. */
+                int ret = 0;
+                esp_err_t esp_err = esp_console_run(interpolated_line.c_str(), &ret);
 
-            // Reset global state
-            resetAfterCommands();
+                // Reset global state
+                resetAfterCommands();
 
-            if (isCommand)
-            {
                 if (esp_err == ESP_ERR_NOT_FOUND)
                 {
-                    printf("Unrecognized command\n");
+                    printf("Perintah tidak dikenal: %s\n", kataPertama.c_str());
                 }
                 else if (esp_err == ESP_ERR_INVALID_ARG)
                 {
-                    // command was empty
+                    // perintah kosong, tidak perlu pesan
                 }
                 else if (esp_err == ESP_OK && ret != ESP_OK)
                 {
-                    printf("Command returned non-zero error code: 0x%x (%s)\n", ret, esp_err_to_name(ret));
+                    printf("Perintah mengembalikan kode galat: 0x%x (%s)\n",
+                           ret, esp_err_to_name(ret));
                 }
                 else if (esp_err != ESP_OK)
                 {
-                    printf("Internal error: %s\n", esp_err_to_name(err));
+                    printf("Galat internal: %s\n", esp_err_to_name(esp_err));
                 }
+            }
+            else
+            {
+                /* Jalankan sebagai kode BAIK dan LAPORKAN galatnya. */
+                err = baik_exec(baik, interpolated_line.c_str(), &res);
+                if (err != BAIK_OK)
+                {
+                    baik_print_error(baik, stdout, NULL, 1);
+                    /* Bersihkan status galat supaya REPL tetap hidup. */
+                    err = BAIK_OK;
+                }
+
+                // Reset global state
+                resetAfterCommands();
             }
 
             linenoiseFree(line);
         }
-        baik_destroy(baik);
-        ESP_LOGD(TAG, "REPL task ended");
-        vTaskDelete(NULL);
+
+        /* Tidak ada kode setelah while(1) di atas: loop REPL tidak punya jalan
+         * keluar, sehingga baik_destroy(baik) yang dulu diletakkan di sini tidak
+         * pernah tercapai (dead code). Interpreter memang hidup selama papan
+         * menyala, jadi tidak ada yang perlu dibebaskan di titik ini. */
     }
 
     void Console::end()

@@ -1,0 +1,17 @@
+--- waktu --- 
+millis awal = 0 
+[WAKTU] delay 250 ms (millis=250)
+millis = 250 
+[WAKTU] delay 250 ms (millis=500)
+millis = 500 
+micros = 500000 
+[WAKTU] delayMicroseconds 1500 us (micros=501500)
+micros = 501500 
+millis = 501 
+[WAKTU] delay 200 ms (millis=701)
+[WAKTU] delay 200 ms (millis=901)
+[WAKTU] delay 200 ms (millis=1101)
+[WAKTU] delay 200 ms (millis=1301)
+[WAKTU] delay 200 ms (millis=1501)
+lewat = 1000 
+[keluar=0]

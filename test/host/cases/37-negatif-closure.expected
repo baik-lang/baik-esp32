@@ -1,0 +1,7 @@
+--- negatif: closure --- 
+36 
+sebelum panggil 
+  at 37-negatif-closure.ina:23
+  at 37-negatif-closure.ina:27
+GALAT EKSEKUSI: [n] tidak terdefinisikan
+[keluar=1]

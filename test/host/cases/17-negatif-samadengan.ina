@@ -1,0 +1,7 @@
+/* KASUS UJI NEGATIF — harus GAGAL.
+ *
+ * BAIK sengaja menolak operator kesetaraan longgar `==` dan `!=`,
+ * dengan pesan "Use ===, not ==". Selalu pakai `===` / `!==`. */
+tulis("sebelum ==");
+tulis(1 == 1);
+tulis("baris ini TIDAK boleh tercetak");

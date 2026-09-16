@@ -1,0 +1,74 @@
+/* Uji PEMANGGILAN FUNGSI SEBAGAI ARGUMEN dan fungsi tingkat-tinggi.
+ *
+ * Yang diuji: hasil fungsi langsung dipakai sebagai argumen fungsi lain,
+ * pemanggilan bersarang berlapis, fungsi dilewatkan sebagai NILAI (lewat
+ * namanya maupun sebagai fungsi tanpa nama), serta fungsi yang mengembalikan
+ * fungsi lain untuk dipanggil di tempat.
+ */
+tulis("--- fungsi sebagai argumen ---");
+
+fungsi tambah(a, b) { balik a + b; }
+fungsi kali(a, b) { balik a * b; }
+fungsi kuadrat(x) { balik x * x; }
+
+/* Hasil pemanggilan langsung jadi argumen. */
+tulis(tambah(kali(2, 3), kali(4, 5)));
+tulis(kuadrat(tambah(2, 3)));
+
+/* Bersarang empat lapis. */
+tulis(tambah(tambah(tambah(1, 2), tambah(3, 4)), tambah(5, 6)));
+tulis(kuadrat(kuadrat(kuadrat(2))));
+
+/* Fungsi dilewatkan sebagai NILAI, lalu dipanggil di dalam. */
+fungsi terapkan(f, x, y) { balik f(x, y); }
+tulis(terapkan(tambah, 7, 8));
+tulis(terapkan(kali, 7, 8));
+
+/* Fungsi tanpa nama sebagai argumen. */
+fungsi terapkan1(f, x) { balik f(x); }
+tulis(terapkan1(fungsi(v) { balik v * 3; }, 9));
+tulis(terapkan1(kuadrat, 9));
+
+/* Pola peta/saring/lipat di atas array, dengan fungsi sebagai parameter. */
+fungsi peta(a, f) {
+  isi h = [];
+  isi i;
+  untuk (i = 0; i < a.panjang; i++) { h.push(f(a[i])); }
+  balik h;
+}
+fungsi lipat(a, f, awal) {
+  isi akum = awal;
+  isi i;
+  untuk (i = 0; i < a.panjang; i++) { akum = f(akum, a[i]); }
+  balik akum;
+}
+isi angka = [1, 2, 3, 4, 5];
+tulis(JSON.stringify(peta(angka, kuadrat)));
+tulis(lipat(angka, tambah, 0));
+tulis(lipat(angka, kali, 1));
+tulis(lipat(peta(angka, kuadrat), tambah, 0));
+
+/* Fungsi mengembalikan fungsi; hasilnya langsung dipanggil. */
+fungsi pilihOperasi(nama) {
+  jika (nama === "tambah") { balik tambah; }
+  balik kali;
+}
+tulis(pilihOperasi("tambah")(10, 20));
+tulis(pilihOperasi("kali")(10, 20));
+
+/* Fungsi sebagai argumen untuk fungsi rekursif. */
+fungsi ulangi(f, x, n) {
+  jika (n === 0) { balik x; }
+  balik ulangi(f, f(x), n - 1);
+}
+fungsi tambah1(x) { balik x + 1; }
+tulis(ulangi(tambah1, 0, 50));
+tulis(ulangi(kuadrat, 2, 3));
+
+/* Argumen berupa objek dan array hasil pemanggilan fungsi lain.
+ * CATATAN: nama properti TIDAK boleh berupa kata kunci. `{ isi: v }` ditolak
+ * parser ("parse error"), karena `isi` adalah kata kunci deklarasi variabel. */
+fungsi bungkus(v) { balik { nilai: v }; }
+tulis(bungkus(tambah(2, 3)).nilai);
+tulis(peta([1, 2], bungkus).panjang);
+tulis(JSON.stringify(peta(angka, bungkus)));

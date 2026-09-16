@@ -1,0 +1,22 @@
+/* Uji validasi pin: pin yang tidak ada / dipakai flash / input-only.
+ * Shim mencetak pesan [GALAT] berbahasa Indonesia, sama seperti di papan,
+ * lalu mengembalikan takterdefinisi (atau -1 untuk fungsi pembaca). */
+tulis("--- validasi pin ---");
+
+/* GPIO 6..11 terpakai SPI flash */
+pinMode(6, OUTPUT);
+digitalWrite(6, HIGH);
+
+/* GPIO 34..39 input-only: tidak bisa OUTPUT */
+pinMode(34, OUTPUT);
+digitalWrite(34, HIGH);
+/* tapi INPUT boleh */
+pinMode(34, INPUT);
+tulis("baca 34 =", digitalRead(34));
+
+/* GPIO yang tidak ada pada papan ini */
+pinMode(99, OUTPUT);
+tulis("baca 99 =", digitalRead(99));
+
+/* ADC hanya pada pin ber-kapabilitas ADC */
+tulis("adc 21 =", analogRead(21));

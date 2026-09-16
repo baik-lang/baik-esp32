@@ -1,0 +1,20 @@
+/* Uji aritmetika dasar: + - * / % dan urutan operasi. */
+tulis("--- aritmetika ---");
+tulis(1 + 2);
+tulis(10 - 3);
+tulis(6 * 7);
+tulis(7 / 2);
+tulis(7 % 3);
+tulis(2 + 3 * 4);
+tulis((2 + 3) * 4);
+tulis(-5);
+tulis(1e3);
+/* CATATAN: angka pecahan dicetak dengan 6 desimal, bilangan bulat tanpa koma */
+tulis(0.1 + 0.2);
+isi n = 10;
+n = n + 5;
+tulis(n);
+n++;
+tulis(n);
+n--;
+tulis(n);

@@ -1,0 +1,62 @@
+// ============================================================
+//  16 - Deep sleep dan bangun berkala
+// ------------------------------------------------------------
+//  Peragaan        : sebabBangun, sebabReset, rtcSet/rtcGet,
+//                    sleepTimer, sleepExt0, tidurDalam
+//  Perangkat keras : tidak ada. Untuk mencoba bangun lewat tombol,
+//                    siapkan tombol dari pin RTC ke GND.
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/16-tidur-dalam.ina")
+//
+//  PERINGATAN: skrip ini MEMBUAT PAPAN TIDUR. Papan akan boot ulang
+//  penuh setelah 10 detik, sehingga REPL terputus dan seluruh variabel
+//  hilang. Jangan dijalankan bila kamu sedang mengerjakan sesuatu yang
+//  belum disimpan. Untuk membatalkan siklus tidur berulang, tekan RESET
+//  lalu hapus skrip ini dari /baik.ina bila kamu memasangnya di sana.
+// ============================================================
+
+tulis("Sebab reset terakhir :", sebabReset());
+tulis("Sebab bangun terakhir:", sebabBangun());
+
+// Memori RTC bertahan melewati deep sleep (tapi hilang bila daya dicabut).
+// Tersedia maksimal 16 slot, isinya angka.
+isi siklus = rtcGet("siklus");
+jika (siklus === takterdefinisi) {
+  siklus = 0;
+  tulis("Ini boot pertama (memori RTC masih kosong).");
+} lainnya {
+  tulis("Ini bangun ke-", siklus, "dari deep sleep.");
+}
+siklus = siklus + 1;
+rtcSet("siklus", siklus);
+
+// Hentikan setelah 3 siklus supaya papan tidak tidur selamanya.
+jika (siklus > 3) {
+  tulis("Sudah 3 siklus, memori RTC direset dan skrip berhenti.");
+  rtcSet("siklus", 0);
+} lainnya {
+  tulis("");
+  tulis("Menyiapkan bangun otomatis 10 detik lagi...");
+
+  // sleepTimer menerima MIKRODETIK: 10 detik = 10 * 1000 * 1000.
+  sleepTimer(10 * 1000 * 1000);
+
+  // Tambahan (opsional): bangun juga bila pin RTC ditarik ke LOW.
+  // Hanya pin ber-CAP_RTC yang bisa. Di ESP32 GPIO0 termasuk; di
+  // ESP32-S3 periksa dengan daftarPin(CAP_RTC).
+  jika (pinPunya(0, CAP_RTC)) {
+    sleepExt0(0, 0);       // pin 0, bangun saat level 0 (LOW)
+    tulis("Bisa juga dibangunkan dengan menekan tombol BOOT.");
+  }
+
+  isi pinRtc = daftarPin(CAP_RTC);
+  tulis("Pin yang bisa membangunkan papan:", pinRtc.panjang, "buah");
+
+  tulis("Selamat tidur. Sampai jumpa 10 detik lagi!");
+  delay(200);              // beri waktu konsol mengosongkan bufernya
+
+  // tidurDalam() tidak pernah kembali: papan boot ulang saat bangun.
+  tidurDalam(10 * 1000 * 1000);
+
+  tulis("Baris ini TIDAK PERNAH tercetak.");
+}

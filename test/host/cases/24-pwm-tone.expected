@@ -1,0 +1,18 @@
+--- pwm & tone --- 
+[GPIO] mode pin 16 <- OUTPUT
+[PWM] pin 16 <- 128/255
+duty = 128 
+[PWM] pin 16 <- 255/255
+duty = 255 
+[PWM] pin 16 <- 0/255
+duty = 0 
+[PWM] pin 17 <- 512/1023
+duty17 = 512 
+[PWM] ledcAttach pin 18 freq 5000 Hz 8 bit
+[PWM] ledc 18 <- 200
+ledc18 = 200 
+[PWM] ledc 18 <- 10
+[TONE] pin 19 <- 440 Hz (250 ms)
+[TONE] pin 19 diam
+[GALAT] analogWrite: pin 34 tidak punya kapabilitas PWM
+[keluar=0]

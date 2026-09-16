@@ -1,0 +1,21 @@
+/* Uji rekursi: faktorial, fibonacci, dan rekursi bersarang. */
+tulis("--- rekursi ---");
+fungsi faktorial(n) {
+  jika (n <= 1) { balik 1; }
+  balik n * faktorial(n - 1);
+}
+tulis(faktorial(5));
+tulis(faktorial(10));
+
+fungsi fib(n) {
+  jika (n < 2) { balik n; }
+  balik fib(n - 1) + fib(n - 2);
+}
+tulis(fib(10));
+tulis(fib(15));
+
+fungsi jumlahSampai(n) {
+  jika (n === 0) { balik 0; }
+  balik n + jumlahSampai(n - 1);
+}
+tulis(jumlahSampai(100));

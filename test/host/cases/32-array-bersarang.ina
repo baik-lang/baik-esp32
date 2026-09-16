@@ -1,0 +1,48 @@
+/* Uji ARRAY BERSARANG: matriks, indeks berantai, mutasi di kedalaman,
+ * .push pada sub-array, dan iterasi untuk bersarang di atas matriks.
+ *
+ * Kasus 03-array hanya menguji array datar satu tingkat.
+ */
+tulis("--- array bersarang ---");
+
+isi m = [[1, 2, 3], [4, 5, 6], [7, 8, 9]];
+tulis(m.panjang);
+tulis(m[0].panjang);
+tulis(m[1][2]);
+tulis(JSON.stringify(m));
+
+/* Mutasi elemen di kedalaman 2. */
+m[2][0] = 70;
+tulis(m[2][0]);
+tulis(JSON.stringify(m[2]));
+
+/* Jumlah seluruh sel lewat untuk bersarang. */
+isi r; isi k; isi total = 0;
+untuk (r = 0; r < m.panjang; r++) {
+  untuk (k = 0; k < m[r].panjang; k++) {
+    total = total + m[r][k];
+  }
+}
+tulis(total);
+
+/* Diagonal utama. */
+isi diag = [];
+untuk (r = 0; r < m.panjang; r++) { diag.push(m[r][r]); }
+tulis(JSON.stringify(diag));
+
+/* .push pada sub-array mengubah matriks aslinya (array adalah rujukan). */
+m[0].push(99);
+tulis(m[0].panjang);
+tulis(JSON.stringify(m[0]));
+
+/* Bersarang tiga tingkat. */
+isi dalam = [1, [2, [3, [4]]]];
+tulis(dalam[1][1][1][0]);
+tulis(JSON.stringify(dalam));
+
+/* Array kosong sebagai anggota, dan array berisi campuran tipe. */
+isi campur = [[], [0], ["a", "b"], [[]]];
+tulis(campur.panjang);
+tulis(campur[0].panjang);
+tulis(campur[2][1]);
+tulis(JSON.stringify(campur));

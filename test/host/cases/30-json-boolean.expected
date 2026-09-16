@@ -1,0 +1,16 @@
+--- json boolean sah --- 
+true 
+false 
+null 
+ 
+{"e":"x","d":1,"c":null,"b":false,"a":true} 
+[true,false,null,1,"x"] 
+{"daftar":[null,false],"luar":{"dalam":true}} 
+--- tulis tetap Indonesia --- 
+benar 
+salah 
+kosong 
+takterdefinisi 
+42 -7 1.500000 
+"halo" 
+[keluar=0]

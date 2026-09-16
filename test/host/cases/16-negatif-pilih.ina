@@ -1,0 +1,12 @@
+/* KASUS UJI NEGATIF — harus GAGAL.
+ *
+ * `pilih` (= switch) dan `sama` (= case) belum diimplementasikan parser BAIK.
+ * Pengganti yang benar adalah rantai jika / lainnya jika / lainnya
+ * (lihat cases/14-batasan-bahasa.ina). */
+tulis("sebelum pilih");
+isi n = 1;
+pilih (n) {
+  sama 1: tulis("satu"); berhenti;
+  standar: tulis("lain");
+}
+tulis("baris ini TIDAK boleh tercetak");

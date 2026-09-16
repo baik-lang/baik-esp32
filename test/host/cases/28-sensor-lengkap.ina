@@ -1,0 +1,31 @@
+/* Skenario gabungan: baca sensor -> hitung -> kendalikan LED.
+ * Mewakili bentuk program nyata yang akan dijalankan di papan. */
+tulis("--- skenario sensor ---");
+isi PIN_SENSOR = 34;
+isi PIN_LED = 2;
+isi AMBANG = 2000;
+
+pinMode(PIN_SENSOR, INPUT);
+pinMode(PIN_LED, OUTPUT);
+shimLog(salah);                 /* matikan catatan aksi supaya ringkas */
+
+isi contoh = [500, 1500, 2500, 3500, 4000];
+isi i;
+isi nyala = 0;
+untuk (i = 0; i < contoh.panjang; i++) {
+  shimSetAnalog(PIN_SENSOR, contoh[i]);
+  isi nilai = analogRead(PIN_SENSOR);
+  isi persen = map(nilai, 0, 4095, 0, 100);
+  jika (nilai > AMBANG) {
+    digitalWrite(PIN_LED, HIGH);
+    nyala = nyala + 1;
+  } lainnya {
+    digitalWrite(PIN_LED, LOW);
+  }
+  /* argumen terpisah: BAIK melarang gabung "teks" + angka */
+  tulis("nilai=", nilai, "persen=", persen, "led=", shimGetLevel(PIN_LED));
+  delay(100);
+}
+shimLog(benar);
+tulis("jumlah nyala =", nyala);
+tulis("waktu total =", millis());

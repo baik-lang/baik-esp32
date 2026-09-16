@@ -1,0 +1,86 @@
+// ============================================================
+//  15 - Interupsi tombol
+// ------------------------------------------------------------
+//  Peragaan        : attachInterrupt/pasangInterupsi, interruptCount,
+//                    serviceInterrupts, detachInterrupt
+//  Perangkat keras : tombol BOOT bawaan papan (GPIO0), atau tombol
+//                    sendiri antara GPIO pilihanmu dan GND.
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/15-interupsi-tombol.ina")
+// ============================================================
+
+// BAGAIMANA INTERUPSI BEKERJA DI BAIK
+// -----------------------------------
+// Interpreter BAIK tidak reentrant, jadi callback BAIK TIDAK PERNAH
+// dijalankan dari dalam ISR. Yang terjadi:
+//   1. ISR (kode C) hanya menaikkan pencacah per pin. Sangat cepat.
+//   2. Callback BAIK baru dipanggil ketika serviceInterrupts()
+//      dijalankan - otomatis setiap kali REPL menganggur, atau manual
+//      dari dalam loop skrip seperti contoh di bawah.
+//
+// Akibatnya, yang harus kamu terima:
+//   - Penanganan TIDAK real-time. Jeda antara pinggiran sinyal dan
+//     jalannya callback berskala MILIDETIK, bukan mikrodetik, dan jauh
+//     lebih lama bila skrip sedang tertahan di delay() yang panjang.
+//     Untuk mengukur waktu presisi, pakai pulseIn() - ia mengukur di
+//     dalam kode C, bukan lewat callback BAIK.
+//   - Paling banyak 8 interupsi PER PIN dilayani tiap putaran. Sisanya
+//     menumpuk dan dilayani putaran berikutnya. Sinyal yang sangat
+//     cepat (mis. enkoder putaran tinggi) AKAN kehilangan hitungan.
+//
+// ATURAN KERAS: callback WAJIB fungsi BAIK, yaitu fungsi yang kamu
+// tulis sendiri dengan kata kunci `fungsi`. Fungsi BAWAAN ditolak:
+//
+//     pasangInterupsi(0, digitalToggle, RISING);   // DITOLAK
+//     fungsi kedip(pin) { digitalToggle(2); }
+//     pasangInterupsi(0, kedip, RISING);           // BENAR
+//
+// Interpreter tidak bisa memanggil fungsi native lewat jalur ini, dan
+// dulu percobaan itu me-reset papan tanpa pesan. Sekarang firmware
+// menolaknya lebih dulu dengan galat yang jelas.
+
+isi PIN_TOMBOL = 0;                 // tombol BOOT
+isi total      = 0;
+isi nyala      = salah;
+
+pinMode(PIN_TOMBOL, INPUT_PULLUP);
+
+// Callback menerima NOMOR PIN sebagai argumen, sehingga satu fungsi
+// yang sama bisa dipasang di beberapa pin sekaligus.
+//
+// Fungsi ini dipanggil dari task konsol, BUKAN dari ISR. Karena itu ia
+// boleh melakukan apa saja: mencetak, memakai delay, mengakses objek.
+fungsi tombolDitekan(pin) {
+  total++;
+  nyala = !nyala;
+  tulis("Interupsi #", total, "dari GPIO", pin, "pada t =", millis(), "ms");
+  ledBawaan(nyala);        // portabel: jalan di ESP32 maupun ESP32-S3
+}
+
+// FALLING = dipicu saat pin berubah dari HIGH ke LOW, yaitu saat tombol
+// dengan pull-up ditekan.
+pasangInterupsi(PIN_TOMBOL, tombolDitekan, FALLING);
+tulis("Interupsi terpasang di GPIO", PIN_TOMBOL, "mode FALLING.");
+tulis("Tekan tombol BOOT beberapa kali dalam 15 detik ke depan.");
+tulis("");
+
+// Loop pemantauan. Setiap putaran kita melayani interupsi yang tertahan.
+untuk (isi i = 0; i < 150; i++) {
+  isi tertahan = interruptCount(PIN_TOMBOL);
+  jika (tertahan > 0) {
+    tulis("(", tertahan, "interupsi menunggu dilayani)");
+  }
+
+  serviceInterrupts();   // <- di sinilah tombolDitekan() benar-benar jalan
+
+  delay(100);
+}
+
+lepasInterupsi(PIN_TOMBOL);
+ledBawaan(salah);
+tulis("");
+tulis("Interupsi dilepas. Total tekan terdeteksi:", total);
+tulis("Bila angkanya lebih besar dari jumlah tekanmu, itu PANTULAN");
+tulis("mekanis tombol (bouncing). Atasi dengan kapasitor 100nF paralel");
+tulis("dengan tombol, atau dengan mengabaikan pemicu yang berjarak");
+tulis("kurang dari 50 ms memakai millis().");

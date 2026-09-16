@@ -1,1 +1,51 @@
-tulis("halo dari baik")
+// ---------------------------------------------------------------------------
+// baik.ina - skrip pembuka (autorun) BAIK di ESP32.
+//
+// Berkas ini dibaca dari SPIFFS dan dijalankan OTOMATIS saat papan menyala,
+// tepat sebelum REPL serial siap menerima perintah.
+//
+// PENTING: JANGAN memakai loop tak terbatas (mis. `ulang (benar) { ... }`) di
+// berkas ini. Selama skrip autorun berjalan, REPL ikut terblokir dan papan
+// tidak bisa dikendalikan lagi. Taruh loop panjang di berkas lain, lalu
+// jalankan dengan perintah konsol:  run /namaberkas.ina
+//
+// Ubah isi berkas ini lewat editor web (buka http://<alamat-ip>/) atau dengan
+// mengunggah ulang sistem berkas:  pio run -t uploadfs
+//
+// Catatan bahasa: BAIK memakai `isi` untuk mendeklarasikan variabel.
+// Kata kunci `var` MASIH DICADANGKAN dan belum diimplementasi.
+// ---------------------------------------------------------------------------
+
+tulis("=================================");
+tulis(" BAIK siap dipakai di ESP32");
+tulis("=================================");
+
+// --- Informasi papan & chip ------------------------------------------------
+tulis("Papan  :", BOARD);
+tulis("Chip   :", CHIP, "revisi", ESP.getChipRevision());
+tulis("Inti   :", ESP.getChipCores(), "@", ESP.getCpuFreqMHz(), "MHz");
+tulis("Heap   :", ESP.getFreeHeap(), "bita bebas");
+tulis("Flash  :", ESP.getFlashChipSize(), "bita");
+tulis("SDK    :", ESP.getSdkVersion());
+tulis("LED    : GPIO", LED_BUILTIN);
+
+// --- Kedipkan LED onboard sebagai tanda papan hidup ------------------------
+// Jumlah kedipan dibatasi supaya autorun cepat selesai.
+fungsi kedip(pin, jumlah, jeda) {
+  pinMode(pin, OUTPUT);
+  untuk (isi i = 0; i < jumlah; i++) {
+    digitalWrite(pin, HIGH);
+    delay(jeda);
+    digitalWrite(pin, LOW);
+    delay(jeda);
+  }
+  balik jumlah;
+}
+
+kedip(LED_BUILTIN, 3, 150);
+
+tulis("");
+tulis("Ketik 'help'   -> daftar perintah konsol");
+tulis("Ketik 'api'    -> daftar fungsi ESP32 yang tersedia di BAIK");
+tulis("Ketik 'pinout' -> peta pin papan ini");
+tulis("Ketik 'ls'     -> daftar berkas di SPIFFS");

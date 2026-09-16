@@ -1,0 +1,44 @@
+// ============================================================
+//  08 - Memindai bus I2C
+// ------------------------------------------------------------
+//  Peragaan        : Wire.begin, pindaiI2C/Wire.scan, Wire.readReg
+//  Perangkat keras : minimal satu perangkat I2C (OLED SSD1306 alamat
+//                    0x3C, RTC DS3231 0x68, sensor BME280 0x76, dll)
+//                    tersambung ke pin SDA dan SCL papan. Banyak modul
+//                    sudah punya resistor pull-up sendiri; kalau tidak,
+//                    pasang 4,7k dari SDA dan SCL ke 3V3.
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/08-pindai-i2c.ina")
+// ============================================================
+
+tulis("Pin I2C bawaan papan ini: SDA =", SDA, ", SCL =", SCL);
+
+// Wire.begin(sda, scl, frekuensi). 100000 = mode standar, 400000 = fast.
+jika (Wire.begin(SDA, SCL, 100000) === salah) {
+  tulis("Gagal menyalakan bus I2C.");
+} lainnya {
+  tulis("Memindai alamat 0x08 sampai 0x77...");
+
+  isi ditemukan = pindaiI2C();       // sama dengan Wire.scan() dan i2cScan()
+
+  jika (ditemukan.panjang === 0) {
+    tulis("Tidak ada perangkat yang menjawab.");
+    tulis("Periksa: kabel SDA/SCL tertukar? GND tersambung?");
+    tulis("Modul butuh 5 V padahal diberi 3,3 V? Pull-up terpasang?");
+  } lainnya {
+    tulis("Ditemukan", ditemukan.panjang, "perangkat:");
+    untuk (isi i = 0; i < ditemukan.panjang; i++) {
+      tulis("  alamat (desimal):", ditemukan[i]);
+    }
+    tulis("Petunjuk alamat yang sering dijumpai (desimal = heksadesimal):");
+    tulis("   60 = 0x3C OLED SSD1306   | 104 = 0x68 DS3231 / MPU6050");
+    tulis("  118 = 0x76, 119 = 0x77 BMP280 / BME280 | 39 = 0x27 LCD I2C");
+
+    // Contoh membaca satu register dari perangkat pertama.
+    isi pertama = ditemukan[0];
+    tulis("Isi register 0x00 perangkat pertama:", Wire.readReg(pertama, 0x00));
+  }
+
+  Wire.end();
+  tulis("Selesai.");
+}

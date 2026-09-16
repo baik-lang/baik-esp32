@@ -1,0 +1,17 @@
+/* Uji ADC: analogRead, analogReadMilliVolts, alias Indonesia, dan map(). */
+tulis("--- adc ---");
+pinMode(34, INPUT);
+shimSetAnalog(34, 2048);          /* khusus PC: suntik nilai ADC */
+isi mentah = analogRead(34);
+tulis("mentah =", mentah);
+tulis("milivolt =", analogReadMilliVolts(34));
+tulis("persen =", map(mentah, 0, 4095, 0, 100));
+
+shimSetAnalog(35, 0);
+tulis("nol =", bacaAnalog(35));
+shimSetAnalog(35, 4095);
+tulis("penuh =", bacaAnalog(35));
+tulis("mv penuh =", bacaMiliVolt(35));
+
+/* Nilai bawaan (deterministik) bila uji tidak menyuntik apa pun */
+tulis("bawaan 36 =", analogRead(36));

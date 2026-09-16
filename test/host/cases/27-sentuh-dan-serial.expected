@@ -1,0 +1,17 @@
+--- sentuh, serial, esp --- 
+[TOUCH] pin 4 -> 12
+sentuh 4 = 12 
+[TOUCH] pin 4 -> 12
+sentuh 4 (alias) = 12 
+[TOUCH] pin 4 -> 12
+tersentuh 
+[GALAT] touchRead: pin 16 tidak punya kapabilitas TOUCH
+sentuh 16 = -1 
+[SERIAL] begin 115200 baud
+halo dari Serial
+tanpa newline
+chip = ESP32-HOST-SHIM 
+core = 2 
+cpu MHz = 240 
+suhu = 42.500000 
+[keluar=0]

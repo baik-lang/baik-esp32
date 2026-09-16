@@ -1,0 +1,16 @@
+--- kedip --- 
+[GPIO] mode pin 2 <- OUTPUT
+[GPIO] pin 2 <- HIGH
+[WAKTU] delay 100 ms (millis=100)
+[GPIO] pin 2 <- LOW
+[WAKTU] delay 100 ms (millis=200)
+[GPIO] pin 2 <- HIGH
+[WAKTU] delay 100 ms (millis=300)
+[GPIO] pin 2 <- LOW
+[WAKTU] delay 100 ms (millis=400)
+[GPIO] pin 2 <- HIGH
+[WAKTU] delay 100 ms (millis=500)
+[GPIO] pin 2 <- LOW
+[WAKTU] delay 100 ms (millis=600)
+total waktu (ms) = 600 
+[keluar=0]

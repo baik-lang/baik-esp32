@@ -1,0 +1,20 @@
+/* Uji `balik` (=return): balik awal, balik nilai, balik dari dalam loop. */
+tulis("--- balik ---");
+fungsi cekPositif(n) {
+  jika (n < 0) { balik "negatif"; }
+  jika (n === 0) { balik "nol"; }
+  balik "positif";
+}
+tulis(cekPositif(-3));
+tulis(cekPositif(0));
+tulis(cekPositif(7));
+
+fungsi cariPertamaGenap(a) {
+  isi i;
+  untuk (i = 0; i < a.panjang; i++) {
+    jika (a[i] % 2 === 0) { balik a[i]; }
+  }
+  balik -1;
+}
+tulis(cariPertamaGenap([1, 3, 8, 10]));
+tulis(cariPertamaGenap([1, 3, 5]));

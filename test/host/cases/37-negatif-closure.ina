@@ -1,0 +1,30 @@
+/* NEGATIF: membuktikan batasan yang selama ini hanya DICATAT sebagai komentar
+ * di 14-batasan-bahasa.ina, yaitu bahwa BAIK TIDAK punya closure.
+ *
+ * Fungsi tanpa nama yang dikembalikan dari fungsi lain TIDAK menangkap
+ * variabel milik fungsi pembungkusnya. Saat ia dipanggil belakangan, variabel
+ * itu sudah tidak ada dan interpreter membalas "[n] tidak terdefinisikan".
+ *
+ * Kalau suatu hari closure diimplementasi, kasus ini akan GAGAL - dan memang
+ * begitulah seharusnya: berkas ini penanda perilaku, bukan target selamanya.
+ */
+tulis("--- negatif: closure ---");
+
+/* Sebagai pembanding: fungsi yang TIDAK bergantung pada variabel luar
+ * berjalan normal walau dikembalikan dari fungsi lain. */
+fungsi buatKuadrat() {
+  balik fungsi(x) { balik x * x; };
+}
+isi kuadrat = buatKuadrat();
+tulis(kuadrat(6));
+
+/* Ini yang gagal: `n` milik buatPenambah() tidak ikut terbawa. */
+fungsi buatPenambah(n) {
+  balik fungsi(x) { balik x + n; };
+}
+isi tambah5 = buatPenambah(5);
+tulis("sebelum panggil");
+tulis(tambah5(10));
+
+/* Tidak akan sampai ke sini. */
+tulis("TIDAK TERCETAK");

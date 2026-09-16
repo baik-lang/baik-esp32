@@ -1,0 +1,32 @@
+/* KASUS REGRESI — JSON.stringify atas nilai dasar.
+ *
+ * Pernah ada bug di baik_to_string(): panjang string untuk benar/salah/
+ * kosong/takterdefinisi ditulis tangan dan tidak cocok dengan panjang kata
+ * sebenarnya, sehingga hasilnya terpotong satu huruf:
+ *     JSON.stringify(benar)  -> "bena"
+ *     JSON.stringify(kosong) -> "koso"
+ * Uji ini mengunci perilaku yang benar supaya bug itu tidak kambuh. */
+tulis("--- JSON nilai dasar ---");
+tulis(JSON.stringify(benar));
+tulis(JSON.stringify(salah));
+tulis(JSON.stringify(kosong));
+tulis(JSON.stringify(takterdefinisi));
+tulis(JSON.stringify(42));
+tulis(JSON.stringify(-7));
+tulis(JSON.stringify("halo"));
+
+/* di dalam array — tempat bug lama paling kelihatan */
+tulis(JSON.stringify([benar, salah, kosong]));
+tulis(JSON.stringify([1, "a", benar, kosong]));
+
+/* di dalam object */
+tulis(JSON.stringify({ a: benar, b: salah, c: kosong }));
+
+/* CATATAN: JSON.stringify(takterdefinisi) menghasilkan string KOSONG
+ * (baris kosong di atas), mirip JSON.stringify(undefined) di JavaScript.
+ *
+ * CATATAN PENTING: keluaran untuk boolean/null memakai literal JSON
+ * (true/false/null), BUKAN kata Indonesia. JSON adalah format pertukaran
+ * data, jadi hasilnya harus bisa dibaca balik oleh JSON.parse dan oleh
+ * sistem lain. Yang tetap berbahasa Indonesia adalah tulis(), bukan JSON.
+ * Lihat kasus 30-json-boolean.ina yang mengunci pemisahan itu. */

@@ -1,0 +1,14 @@
+--- validasi pin --- 
+[GALAT] pinMode: pin 6 terpakai SPI flash, jangan dipakai
+[GALAT] digitalWrite: pin 6 terpakai SPI flash, jangan dipakai
+[GALAT] pinMode: pin 34 tidak punya kapabilitas DIGITAL
+[GALAT] digitalWrite: pin 34 tidak punya kapabilitas OUTPUT
+[GPIO] mode pin 34 <- INPUT
+[GPIO] pin 34 -> LOW
+baca 34 = 0 
+[GALAT] pinMode: GPIO 99 tidak ada pada papan ini
+[GALAT] digitalRead: GPIO 99 tidak ada pada papan ini
+baca 99 = -1 
+[GALAT] analogRead: pin 21 tidak punya kapabilitas ADC
+adc 21 = -1 
+[keluar=0]

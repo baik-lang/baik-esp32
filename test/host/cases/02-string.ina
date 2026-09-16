@@ -1,0 +1,18 @@
+/* Uji string: gabung, .panjang, .at, .indexOf, .slice, chr(). */
+tulis("--- string ---");
+isi s = "halo";
+tulis(s);
+tulis(s + " dunia");
+/* PENTING: di BAIK properti panjang string/array adalah `panjang`, BUKAN
+ * `length` (`length` menghasilkan takterdefinisi / galat tipe). */
+tulis(s.panjang);
+tulis(s.at(0));        /* balik KODE karakter, bukan hurufnya */
+tulis(s.indexOf("l"));
+tulis(s.slice(1, 3));
+tulis(chr(65));
+/* PENTING: BAIK MELARANG konversi tipe implisit. `"teks" + 1` menghasilkan
+ * galat "konversi tipe implisit dilarang". Untuk menggabung angka ke string
+ * pakai JSON.stringify(), atau serahkan ke tulis() sebagai argumen terpisah. */
+tulis("angka=" + JSON.stringify(1));
+tulis("angka=", 1);
+tulis("gabung " + "string " + "saja");

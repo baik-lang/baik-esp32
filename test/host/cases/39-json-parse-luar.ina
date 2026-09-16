@@ -1,0 +1,84 @@
+/* KASUS REGRESI - JSON.parse atas teks JSON LITERAL dari luar.
+ *
+ * Ini bentuk yang paling sering dipakai di lapangan: balasan API lewat
+ * HTTP.getJSON() diurai dengan JSON.parse. Pengurai lama memilih cabang dari
+ * huruf pertama ('n', 't', 'f') tetapi membandingkannya dengan kata Indonesia
+ * "kosong"/"benar"/"salah", sehingga true/false/null TIDAK PERNAH cocok dan
+ * penguraian SELALU gagal - padahal ketiganya ada di hampir semua balasan API.
+ *
+ * Teks JSON di bawah ditulis tangan sebagai literal (bukan hasil
+ * JSON.stringify), supaya uji ini tetap menangkap bug pengurai walaupun
+ * JSON.stringify sendiri sedang rusak.
+ */
+tulis("--- JSON.parse teks luar ---");
+
+/* Nilai dasar telanjang. */
+tulis(JSON.parse("true"));
+tulis(JSON.parse("false"));
+tulis(JSON.parse("null"));
+tulis(tipe JSON.parse("true"));
+tulis(tipe JSON.parse("false"));
+tulis(tipe JSON.parse("null"));
+tulis(JSON.parse("\"halo\""));
+
+/* REGRESI - angka telanjang. Dulu JSON.parse("42") sesekali menghasilkan
+ * 422/423/426 dan JSON.parse("-7") menghasilkan -73/-76, acak sekitar 1 dari
+ * 10 jalan. Sebabnya strtod() dipanggil atas pointer token yang tidak diakhiri
+ * NUL: di dalam objek/untaian ada `,`/`}`/`]` yang menghentikannya, tetapi
+ * pada angka telanjang tidak ada apa pun sehingga ia membaca melewati ujung
+ * penyangga. Sekarang token disalin ke penyangga berbatas lebih dulu. */
+tulis(JSON.parse("42"));
+tulis(JSON.parse("-7"));
+tulis(JSON.parse("3.5"));
+tulis(JSON.parse("0"));
+
+/* Objek kecil persis seperti yang diminta: '{"ok":true,"n":null}'. */
+isi r = JSON.parse('{"ok":true,"n":null}');
+tulis(r.ok);
+tulis(r.n);
+tulis(tipe r.ok);
+tulis(tipe r.n);
+tulis(r.ok === benar);
+tulis(r.n === kosong);
+tulis(JSON.stringify(r));
+
+/* Balasan API yang lebih mirip aslinya: campur boolean, null, angka, string,
+ * untaian, dan objek bersarang. */
+isi balasan = JSON.parse('{"sukses":true,"galat":null,"kode":200,"pesan":"OK","data":{"aktif":false,"suhu":27,"tag":["a","b"]},"daftar":[true,false,null]}');
+tulis(balasan.sukses);
+tulis(balasan.galat);
+tulis(balasan.kode);
+tulis(balasan.pesan);
+tulis(balasan.data.aktif);
+tulis(balasan.data.suhu);
+tulis(balasan.data.tag.panjang);
+tulis(balasan.data.tag[1]);
+tulis(balasan.daftar.panjang);
+tulis(balasan.daftar[0]);
+tulis(balasan.daftar[1]);
+tulis(balasan.daftar[2]);
+
+/* Nilai boolean/null bisa langsung dipakai sebagai syarat `jika`. */
+jika (balasan.sukses) { tulis("cabang benar diambil"); }
+lainnya { tulis("SALAH: cabang benar tidak diambil"); }
+
+/* Untaian telanjang berisi ketiga literal bermasalah. */
+isi u = JSON.parse('[true,false,null,1,"s"]');
+tulis(u.panjang);
+tulis(u[0]);
+tulis(u[1]);
+tulis(u[2]);
+tulis(u[3]);
+tulis(u[4]);
+tulis(JSON.stringify(u));
+
+/* Bersarang dalam: null dan boolean di kedalaman. */
+isi dalam = JSON.parse('{"a":{"b":{"c":null,"d":true}}}');
+tulis(dalam.a.b.c);
+tulis(dalam.a.b.d);
+tulis(JSON.stringify(dalam));
+
+/* Spasi/indentasi di dalam teks JSON tidak boleh mengganggu pengurai. */
+isi longgar = JSON.parse('{ "ok" : true , "n" : null }');
+tulis(longgar.ok);
+tulis(longgar.n);

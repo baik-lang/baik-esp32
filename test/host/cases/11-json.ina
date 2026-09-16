@@ -1,0 +1,21 @@
+/* Uji JSON.stringify dan JSON.parse. */
+tulis("--- JSON ---");
+tulis(JSON.stringify({ a: 1, b: 2 }));
+tulis(JSON.stringify([1, 2, 3]));
+tulis(JSON.stringify({ x: [1, 2], y: "teks" }));
+tulis(JSON.stringify(42));
+tulis(JSON.stringify("halo"));
+
+isi o = JSON.parse("{\"nama\":\"baik\",\"versi\":2}");
+tulis(o.nama);
+tulis(o.versi);
+
+isi a = JSON.parse("[10,20,30]");
+tulis(a.panjang);
+tulis(a[1]);
+
+/* pulang-pergi (round trip) */
+isi asal = { p: 1, q: [2, 3] };
+isi balikan = JSON.parse(JSON.stringify(asal));
+tulis(balikan.p);
+tulis(balikan.q[1]);

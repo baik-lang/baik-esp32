@@ -1,0 +1,13 @@
+/* Uji object: literal, akses titik, tambah properti, iterasi `untuk..in`. */
+tulis("--- object ---");
+isi o = { nama: "baik", versi: 1, aktif: benar };
+tulis(o.nama);
+tulis(o.versi);
+tulis(o.aktif);
+o.tambahan = "baru";
+tulis(o.tambahan);
+tulis(o["nama"]);
+/* CATATAN: tulis() pada object hanya mencetak <objek>. */
+tulis(o);
+isi bersarang = { luar: { dalam: 42 } };
+tulis(bersarang.luar.dalam);

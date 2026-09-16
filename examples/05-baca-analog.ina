@@ -1,0 +1,42 @@
+// ============================================================
+//  05 - Membaca tegangan analog (ADC)
+// ------------------------------------------------------------
+//  Peragaan        : analogRead, analogReadMilliVolts, map,
+//                    analogSetAttenuation, daftarPin(CAP_ADC1)
+//  Perangkat keras : potensiometer 10k. Kaki tepi ke 3V3 dan GND,
+//                    kaki tengah ke pin ADC (lihat PIN_ADC di bawah).
+//                    Tanpa potensiometer skrip tetap jalan, nilainya
+//                    saja yang mengambang.
+//  Papan didukung  : ESP32 (ADC1 = GPIO32..39), ESP32-S3 (ADC1 = GPIO1..10)
+//  Jalankan        : jalankan("/05-baca-analog.ina")
+// ============================================================
+
+// Pilih pin ADC1 pertama yang tersedia di papan ini supaya skrip yang
+// sama jalan di ESP32 maupun ESP32-S3. ADC1 dipilih (bukan ADC2)
+// karena ADC2 TIDAK BISA dibaca selama WiFi aktif.
+isi kandidat = daftarPin(CAP_ADC1);
+jika (kandidat.panjang === 0) {
+  tulis("Papan ini tidak punya pin ADC1?! Periksa pinout().");
+} lainnya {
+  isi PIN_ADC = kandidat[0];
+  tulis("Memakai GPIO", PIN_ADC, "sebagai masukan analog");
+
+  // ADC_11db = jangkauan penuh 0 .. ~3,3 V (nilai bawaan).
+  analogSetPinAttenuation(PIN_ADC, ADC_11db);
+  analogReadResolution(12);          // hasil analogRead 0..4095
+
+  untuk (isi i = 0; i < 20; i++) {
+    isi mentah = analogRead(PIN_ADC);
+    isi mv     = analogReadMilliVolts(PIN_ADC);
+    // CATATAN: map() di BAIK memakai aritmetika PECAHAN (double), bukan
+    // bilangan bulat seperti map() Arduino. map(5,0,9,0,100) menghasilkan
+    // 55.5556 di sini, sedangkan Arduino memberi 55. Bulatkan sendiri
+    // dengan round() bila kamu butuh bilangan bulat.
+    isi persen = round(map(mentah, 0, 4095, 0, 100));
+
+    tulis("mentah:", mentah, "| mV:", mv, "| persen:", batas(persen, 0, 100));
+    delay(300);
+  }
+
+  tulis("Selesai.");
+}

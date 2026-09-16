@@ -1,0 +1,22 @@
+/* Uji perulangan `ulang` (=while) dan berhenti. */
+tulis("--- ulang ---");
+isi i = 0;
+ulang (i < 4) {
+  tulis(i);
+  i = i + 1;
+}
+
+isi n = 1;
+ulang (benar) {
+  n = n * 2;
+  jika (n > 50) { berhenti; }
+}
+tulis(n);
+
+isi hitung = 0;
+isi k = 20;
+ulang (k > 1) {
+  k = k / 2;
+  hitung = hitung + 1;
+}
+tulis(hitung);

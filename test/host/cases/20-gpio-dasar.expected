@@ -1,0 +1,16 @@
+--- gpio dasar --- 
+[GPIO] mode pin 2 <- OUTPUT
+[GPIO] pin 2 <- HIGH
+[GPIO] pin 2 <- LOW
+[GPIO] pin 2 <- HIGH (toggle)
+level LED = 1 
+[GPIO] mode pin 4 <- INPUT_PULLUP
+[GPIO] pin 4 -> HIGH
+tombol = 1 
+[GPIO] pin 4 -> LOW
+tombol = 0 
+[GPIO] mode pin 5 <- OUTPUT
+[GPIO] pin 5 <- HIGH
+[GPIO] pin 5 -> HIGH
+pin5 = 1 
+[keluar=0]

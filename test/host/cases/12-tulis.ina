@@ -1,0 +1,18 @@
+/* Uji builtin `tulis` dan tipe nilai dasar.
+ * CATATAN: tulis() memisahkan argumen dengan spasi dan SELALU menambah
+ * satu spasi di akhir baris sebelum newline. */
+tulis("--- tulis ---");
+tulis("satu argumen");
+tulis("dua", "argumen");
+tulis("angka", 1, 2.5);
+tulis(benar);
+tulis(salah);
+tulis(kosong);
+tulis(takterdefinisi);
+tulis(tipe 1);
+tulis(tipe "s");
+tulis(tipe benar);
+tulis(tipe kosong);
+tulis(tipe [1]);
+tulis(tipe { a: 1 });
+tulis(isNaN(0 / 0));

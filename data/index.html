@@ -1,90 +1,366 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAIK X</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            font-family: Arial, sans-serif;
-        }
-        #editor {
-            flex-grow: 1;
-        }
-        #run-button {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            background-color: #28a745;
-            color: white;
-            margin: 10px;
-        }
-        #config-form {
-            display: flex;
-            flex-direction: column;
-            margin: 10px;
-        }
-        #config-form input {
-            margin-bottom: 10px;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #config-form button {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            background-color: #007bff;
-            color: white;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Editor BAIK - ESP32</title>
+<!--
+  Editor skrip BAIK.
+
+  Sengaja TANPA pustaka dari CDN (dulu memakai Monaco Editor): saat papan
+  berjalan dalam mode Access Point, ponsel/laptop yang terhubung TIDAK punya
+  akses internet, sehingga editor dari CDN tidak akan pernah termuat dan
+  halaman ini tampil kosong. Semua CSS dan JS di bawah ini inline.
+-->
+<style>
+  :root {
+    --latar: #0f172a;
+    --panel: #1e293b;
+    --garis: #334155;
+    --teks: #e2e8f0;
+    --redup: #94a3b8;
+    --hijau: #16a34a;
+    --hijau-terang: #22c55e;
+    --biru: #2563eb;
+    --merah: #dc2626;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background: var(--latar);
+    color: var(--teks);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--garis);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    flex: 1 1 auto;
+  }
+
+  header h1 span {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--redup);
+  }
+
+  header a {
+    color: var(--teks);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 7px 12px;
+    border: 1px solid var(--garis);
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  header a:hover, header a:focus { border-color: var(--biru); }
+
+  .alat {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--garis);
+  }
+
+  label { font-size: 13px; color: var(--redup); }
+
+  input[type="text"] {
+    flex: 1 1 160px;
+    min-width: 0;
+    padding: 9px 10px;
+    font-size: 15px;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    color: var(--teks);
+    background: var(--panel);
+    border: 1px solid var(--garis);
+    border-radius: 6px;
+  }
+
+  input[type="text"]:focus { outline: 2px solid var(--biru); outline-offset: -1px; }
+  input[type="text"].salah { border-color: var(--merah); }
+
+  button, .tombol-berkas {
+    padding: 9px 14px;
+    font-size: 15px;
+    font-family: inherit;
+    color: #fff;
+    background: var(--biru);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  button:disabled { opacity: .55; cursor: progress; }
+  #tombol-unggah { background: var(--hijau); font-weight: 600; }
+  #tombol-unggah:hover:enabled { background: var(--hijau-terang); }
+  .tombol-berkas { background: var(--garis); display: inline-block; }
+  input[type="file"] { display: none; }
+
+  #editor {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 220px;
+    padding: 12px 14px;
+    resize: none;
+    border: none;
+    background: var(--latar);
+    color: var(--teks);
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    font-size: 14px;
+    line-height: 1.55;
+    tab-size: 2;
+  }
+
+  #editor:focus { outline: none; }
+
+  footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border-top: 1px solid var(--garis);
+    font-size: 13px;
+  }
+
+  #status {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 20px;
+  }
+
+  #lampu {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--redup);
+    flex: 0 0 auto;
+  }
+
+  #lampu.sibuk  { background: #eab308; animation: kedip 1s infinite; }
+  #lampu.sukses { background: var(--hijau-terang); }
+  #lampu.gagal  { background: var(--merah); }
+
+  @keyframes kedip { 50% { opacity: .25; } }
+
+  #info { color: var(--redup); }
+
+  /* Layar ponsel: susun kontrol secara vertikal supaya tidak terpotong. */
+  @media (max-width: 560px) {
+    .alat { gap: 6px; }
+    .alat > * { flex: 1 1 100%; }
+    .alat label { flex: 1 1 100%; }
+    button, .tombol-berkas { text-align: center; }
+    footer { flex-direction: column; align-items: flex-start; }
+  }
+</style>
 </head>
 <body>
-    <div id="editor"></div>
-    <button id="run-button">Upload Code</button>
-    <!-- Monaco Editor CDN -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs/loader.min.js"></script>
-    <script>
-        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.33.0/min/vs' }});
-        require(['vs/editor/editor.main'], function() {
-            const editor = monaco.editor.create(document.getElementById('editor'), {
-                value: [
-                    'fungsi helloWorld() {',
-                    '\ttulis("Hello, world!");',
-                    '}',
-                    '',
-                    'helloWorld();'
-                ].join('\n'),
-                //language: 'javascript',
-                theme: 'vs-dark',
-                automaticLayout: true
-            });
 
-            document.getElementById('run-button').addEventListener('click', function() {
-                const code = editor.getValue();
-                const blob = new Blob([code], { type: 'text/plain' });
-                const formData = new FormData();
-                formData.append('file', blob, 'baik.ina');
+<header>
+  <h1>Editor BAIK
+    <span>Tulis skrip, lalu unggah ke papan ESP32</span>
+  </h1>
+  <a href="/ap">Pengaturan Wi-Fi</a>
+</header>
 
-                fetch('/upload', {
-                    method: 'POST',
-                    body: formData
-                }).then(response => response.text())
-                  .then(text => alert(text))
-                  .catch(error => console.error('Error:', error));
-            });
+<div class="alat">
+  <label for="nama-berkas">Nama berkas</label>
+  <input type="text" id="nama-berkas" value="baik.ina" spellcheck="false"
+         autocapitalize="off" autocorrect="off">
+  <label class="tombol-berkas" for="pilih-berkas">Buka berkas .ina</label>
+  <input type="file" id="pilih-berkas" accept=".ina,text/plain">
+  <button type="button" id="tombol-unggah">Unggah ke papan</button>
+</div>
+
+<textarea id="editor" spellcheck="false" autocapitalize="off" autocorrect="off"
+          aria-label="Isi skrip BAIK">// Contoh skrip BAIK
+// Gunakan `isi` untuk membuat variabel (kata kunci `var` belum didukung).
+
+fungsi salam(nama) {
+  tulis("Halo,", nama);
+  balik nama;
+}
+
+salam("dunia");
+
+// Kedipkan LED onboard tiga kali.
+pinMode(LED_BUILTIN, OUTPUT);
+untuk (isi i = 0; i &lt; 3; i++) {
+  digitalWrite(LED_BUILTIN, HIGH);
+  delay(200);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(200);
+}
+</textarea>
+
+<footer>
+  <div id="status">
+    <span id="lampu"></span>
+    <span id="pesan">Siap. Berkas <strong>baik.ina</strong> dijalankan otomatis saat papan menyala.</span>
+  </div>
+  <div id="info"></div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var editor      = document.getElementById("editor");
+  var namaInput   = document.getElementById("nama-berkas");
+  var pilihBerkas = document.getElementById("pilih-berkas");
+  var tombol      = document.getElementById("tombol-unggah");
+  var lampu       = document.getElementById("lampu");
+  var pesan       = document.getElementById("pesan");
+  var info        = document.getElementById("info");
+
+  /* Tampilkan status unggah: keadaan = "" | "sibuk" | "sukses" | "gagal". */
+  function setStatus(keadaan, teks) {
+    lampu.className = keadaan;
+    pesan.textContent = teks;
+  }
+
+  /* Perbarui penghitung ukuran/baris di pojok kanan bawah. */
+  function perbaruiInfo() {
+    var isi = editor.value;
+    var baris = isi.length === 0 ? 0 : isi.split("\n").length;
+    info.textContent = baris + " baris · " + isi.length + " karakter";
+  }
+
+  /* Validasi nama berkas: wajib berakhiran .ina dan tanpa karakter aneh. */
+  function namaValid(nama) {
+    return /^[A-Za-z0-9._-]+\.ina$/.test(nama);
+  }
+
+  function ambilNama() {
+    var nama = namaInput.value.trim();
+    /* Buang awalan "/" bila pengguna menuliskannya; server sudah menambahkan. */
+    while (nama.charAt(0) === "/") { nama = nama.substring(1); }
+    return nama;
+  }
+
+  function periksaNama() {
+    var nama = ambilNama();
+    var ok = namaValid(nama);
+    namaInput.classList.toggle("salah", !ok);
+    return ok;
+  }
+
+  namaInput.addEventListener("input", periksaNama);
+  editor.addEventListener("input", perbaruiInfo);
+
+  /* Tab menyisipkan dua spasi, bukan memindahkan fokus. */
+  editor.addEventListener("keydown", function (e) {
+    if (e.key !== "Tab") { return; }
+    e.preventDefault();
+    var a = editor.selectionStart, b = editor.selectionEnd;
+    editor.value = editor.value.substring(0, a) + "  " + editor.value.substring(b);
+    editor.selectionStart = editor.selectionEnd = a + 2;
+    perbaruiInfo();
+  });
+
+  /* Buka berkas .ina dari perangkat dan tampilkan namanya. */
+  pilihBerkas.addEventListener("change", function () {
+    var berkas = pilihBerkas.files && pilihBerkas.files[0];
+    if (!berkas) { return; }
+
+    if (!namaValid(berkas.name)) {
+      setStatus("gagal", "Ekstensi tidak didukung: " + berkas.name +
+                         " — pilih berkas berakhiran .ina");
+      pilihBerkas.value = "";
+      return;
+    }
+
+    var pembaca = new FileReader();
+    pembaca.onload = function () {
+      editor.value = pembaca.result;
+      namaInput.value = berkas.name;
+      periksaNama();
+      perbaruiInfo();
+      setStatus("sukses", "Berkas dimuat: " + berkas.name +
+                          " (" + berkas.size + " bita). Belum diunggah.");
+    };
+    pembaca.onerror = function () {
+      setStatus("gagal", "Gagal membaca berkas " + berkas.name);
+    };
+    pembaca.readAsText(berkas);
+    pilihBerkas.value = "";
+  });
+
+  /* Unggah isi editor ke endpoint /upload milik papan. */
+  tombol.addEventListener("click", function () {
+    var nama = ambilNama();
+
+    if (!periksaNama()) {
+      setStatus("gagal", "Nama berkas tidak sah: \"" + nama +
+                         "\". Harus berakhiran .ina, contoh: baik.ina");
+      namaInput.focus();
+      return;
+    }
+
+    if (editor.value.trim() === "") {
+      setStatus("gagal", "Skrip masih kosong, tidak ada yang diunggah.");
+      editor.focus();
+      return;
+    }
+
+    var data = new FormData();
+    data.append("file", new Blob([editor.value], { type: "text/plain" }), nama);
+
+    tombol.disabled = true;
+    setStatus("sibuk", "Mengunggah " + nama + " …");
+
+    fetch("/upload", { method: "POST", body: data })
+      .then(function (r) {
+        return r.text().then(function (t) {
+          if (!r.ok) { throw new Error(t || ("HTTP " + r.status)); }
+          return t;
         });
-    </script>
+      })
+      .then(function (t) {
+        setStatus("sukses", nama + " berhasil diunggah. " +
+                            (t || "Papan dimulai ulang …"));
+      })
+      .catch(function (e) {
+        setStatus("gagal", "Gagal mengunggah " + nama + ": " + e.message);
+      })
+      .then(function () {
+        tombol.disabled = false;
+      });
+  });
+
+  perbaruiInfo();
+  periksaNama();
+})();
+</script>
 </body>
 </html>

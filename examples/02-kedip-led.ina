@@ -1,0 +1,89 @@
+// ============================================================
+//  02 - Kedip LED (blink)
+// ------------------------------------------------------------
+//  Peragaan        : ledBawaan (portabel), pinMode, digitalWrite,
+//                    digitalToggle, rgbLedWrite, delay
+//  Perangkat keras : LED bawaan papan. Bila papanmu tidak punya LED
+//                    bawaan, pasang LED + resistor 220 ohm dari GPIO2
+//                    ke GND lalu ubah nilai PIN_LED di bawah.
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/02-kedip-led.ina")
+// ============================================================
+
+// ============================ PENTING ============================
+// LED bawaan kedua papan BERBEDA JENIS:
+//   ESP32 DevKit V1   : LED biasa  -> digitalWrite() menyalakannya
+//   ESP32-S3 DevKitC-1: WS2812 RGB -> digitalWrite() TIDAK berpengaruh
+//                       sama sekali, dan tanpa pesan galat apa pun.
+// Karena itu cara yang PORTABEL adalah ledBawaan(), yang memilih
+// sendiri metode yang benar untuk papan yang sedang dipakai.
+// =================================================================
+
+isi JUMLAH = 20;          // berapa kali berkedip sebelum skrip selesai
+isi JEDA   = 250;         // milidetik
+
+// --- Cara 1: ledBawaan() - jalan di KEDUA papan ---------------------
+tulis("Cara 1: ledBawaan() - portabel di ESP32 maupun ESP32-S3");
+untuk (isi i = 0; i < JUMLAH; i++) {
+  ledBawaan(benar);
+  delay(JEDA);
+  ledBawaan(salah);
+  delay(JEDA);
+}
+
+// --- Cara 2: GPIO biasa --------------------------------------------
+// Ini cara klasik Arduino. Di ESP32-S3 pakailah pin LAIN yang kamu
+// sambungkan LED sendiri, karena LED_BUILTIN di sana adalah WS2812.
+isi PIN_LED = 2;
+jika (pinPunya(PIN_LED, CAP_OUTPUT)) {
+  tulis("Cara 2: digitalWrite + digitalToggle di GPIO", PIN_LED);
+  pinMode(PIN_LED, OUTPUT);
+
+  untuk (isi j = 0; j < JUMLAH; j++) {
+    digitalWrite(PIN_LED, HIGH);
+    delay(JEDA);
+    digitalWrite(PIN_LED, LOW);
+    delay(JEDA);
+  }
+
+  // digitalToggle membalik level pin - lebih singkat.
+  untuk (isi k = 0; k < JUMLAH; k++) {
+    digitalToggle(PIN_LED);
+    delay(JEDA);
+  }
+
+  digitalWrite(PIN_LED, LOW);
+}
+
+// --- Cara 3: LED RGB WS2812 (ESP32-S3) ------------------------------
+// rgbLedWrite(pin, merah, hijau, biru), masing-masing 0..255.
+// WS2812 sangat terang: nilai 16 sudah cukup untuk indikator.
+jika (CHIP === "ESP32-S3") {
+  tulis("Cara 3: warna-warni WS2812 di GPIO", LED_BUILTIN);
+  untuk (isi w = 0; w < 3; w++) {
+    rgbLedWrite(LED_BUILTIN, 32, 0, 0);  delay(300);   // merah
+    rgbLedWrite(LED_BUILTIN, 0, 32, 0);  delay(300);   // hijau
+    rgbLedWrite(LED_BUILTIN, 0, 0, 32);  delay(300);   // biru
+  }
+  rgbLedWrite(LED_BUILTIN, 0, 0, 0);                   // mati
+}
+
+ledBawaan(salah);
+tulis("Selesai.");
+
+// --------------------------------------------------------------
+// CATATAN: skrip ini sengaja memakai perulangan TERBATAS supaya
+// REPL kembali bisa dipakai setelah selesai.
+//
+// Bila kamu mengubah baris `untuk` menjadi perulangan tak terbatas:
+//
+//     ulang (benar) { digitalToggle(PIN_LED); delay(JEDA); }
+//
+// maka skrip TIDAK PERNAH BERHENTI dan REPL akan terblokir: prompt
+// `Baik> ` tidak akan muncul lagi dan papan berhenti menanggapi
+// perintah. Satu-satunya cara keluar adalah MENEKAN TOMBOL RESET
+// (EN) pada papan, atau mencabut lalu memasang kembali kabel USB.
+// Kalau skrip tak terbatas itu tersimpan sebagai /baik.ina, ia akan
+// jalan lagi tiap kali papan menyala - hapus berkasnya lewat editor
+// web untuk memulihkan REPL.
+// --------------------------------------------------------------

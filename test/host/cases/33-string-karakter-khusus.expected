@@ -1,0 +1,21 @@
+--- string karakter khusus --- 
+dia bilang "halo" 
+17 
+C:\jalur\berkas 
+15 
+a\x0ab\x09c 
+5 
+apostrof ' aman 
+0 
+[] 
+3 
+kaf\xc3\xa9\xc3\xa9 
+7 
+dia bilang "halo" / C:\jalur\berkas 
+35 
+"a\nb\tc" 
+["dia bilang \"halo\"","C:\\jalur\\berkas"] 
+benar 
+salah 
+benar 
+[keluar=0]

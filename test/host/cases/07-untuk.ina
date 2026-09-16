@@ -1,0 +1,20 @@
+/* Uji perulangan `untuk`, termasuk berhenti dan teruskan. */
+tulis("--- untuk ---");
+isi i;
+untuk (i = 0; i < 5; i++) {
+  tulis(i);
+}
+
+untuk (isi j = 3; j > 0; j--) {
+  tulis(j);
+}
+
+untuk (i = 0; i < 6; i++) {
+  jika (i === 2) { teruskan; }
+  jika (i === 4) { berhenti; }
+  tulis("i=", i);   /* argumen terpisah: BAIK melarang "teks" + angka */
+}
+
+isi total = 0;
+untuk (i = 1; i <= 10; i++) { total = total + i; }
+tulis(total);

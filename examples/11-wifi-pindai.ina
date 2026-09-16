@@ -1,0 +1,44 @@
+// ============================================================
+//  11 - Memindai jaringan WiFi di sekitar
+// ------------------------------------------------------------
+//  Peragaan        : WiFi.mode, WiFi.scanNetworks, membaca array objek
+//  Perangkat keras : tidak ada
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/11-wifi-pindai.ina")
+// ============================================================
+
+tulis("Memindai jaringan WiFi... (butuh beberapa detik)");
+
+// Mode station diperlukan agar pemindaian bisa jalan.
+WiFi.mode(WIFI_STA);
+WiFi.disconnect();
+delay(100);
+
+isi hasil = WiFi.scanNetworks();
+
+jika (hasil === kosong) {
+  tulis("Pemindaian gagal.");
+} lainnya jika (hasil.panjang === 0) {
+  tulis("Tidak ada jaringan yang terdeteksi.");
+  tulis("Ingat: ESP32 hanya melihat jaringan 2,4 GHz, bukan 5 GHz.");
+} lainnya {
+  tulis("Ditemukan", hasil.panjang, "jaringan:");
+  tulis("");
+
+  untuk (isi i = 0; i < hasil.panjang; i++) {
+    isi jaringan = hasil[i];
+    tulis(i + 1, ".", jaringan.ssid);
+    tulis("     RSSI    :", jaringan.rssi, "dBm");
+    tulis("     Kanal   :", jaringan.kanal);
+    tulis("     Enkripsi:", jaringan.enkripsi);
+    tulis("     BSSID   :", jaringan.bssid);
+  }
+
+  // Cari jaringan dengan sinyal terkuat.
+  isi terbaik = 0;
+  untuk (isi j = 1; j < hasil.panjang; j++) {
+    jika (hasil[j].rssi > hasil[terbaik].rssi) { terbaik = j; }
+  }
+  tulis("");
+  tulis("Sinyal terkuat:", hasil[terbaik].ssid, "pada", hasil[terbaik].rssi, "dBm");
+}

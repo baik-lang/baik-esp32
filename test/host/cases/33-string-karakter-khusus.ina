@@ -1,0 +1,52 @@
+/* Uji STRING dengan karakter khusus: escape, kutip di dalam kutip,
+ * backslash, karakter non-ASCII, dan bagaimana tulis() menampilkannya.
+ *
+ * CATATAN PENTING soal keluaran: tulis() TIDAK mencetak byte kendali apa
+ * adanya. Baris baru dan tab keluar sebagai escape heksadesimal (\x0a, \x09),
+ * sehingga satu panggilan tulis() tetap menghasilkan satu baris keluaran.
+ * Itu perilaku yang sengaja dikunci oleh kasus uji ini.
+ */
+tulis("--- string karakter khusus ---");
+
+/* Kutip ganda yang di-escape di dalam string. */
+isi kutip = "dia bilang \"halo\"";
+tulis(kutip);
+tulis(kutip.panjang);
+
+/* Backslash literal. */
+isi bs = "C:\\jalur\\berkas";
+tulis(bs);
+tulis(bs.panjang);
+
+/* Baris baru dan tab -> ditampilkan sebagai \x0a dan \x09. */
+isi kendali = "a\nb\tc";
+tulis(kendali);
+tulis(kendali.panjang);
+
+/* Kutip tunggal tidak perlu di-escape di dalam kutip ganda. */
+tulis("apostrof ' aman");
+
+/* String kosong dan string berisi spasi saja. */
+isi kosongStr = "";
+tulis(kosongStr.panjang);
+tulis("[" + kosongStr + "]");
+tulis("   ".panjang);
+
+/* Karakter non-ASCII (UTF-8): .panjang menghitung BYTE, bukan karakter. */
+isi aksen = "kaféé";
+tulis(aksen);
+tulis(aksen.panjang);
+
+/* Penggabungan string yang mengandung escape. */
+isi gabung = kutip + " / " + bs;
+tulis(gabung);
+tulis(gabung.panjang);
+
+/* Karakter khusus melewati JSON.stringify. */
+tulis(JSON.stringify(kendali));
+tulis(JSON.stringify([kutip, bs]));
+
+/* Indeks karakter dan pembandingan string persis. */
+tulis("abc" === "abc");
+tulis("abc" === "abd");
+tulis("a\\b" === "a\\b");

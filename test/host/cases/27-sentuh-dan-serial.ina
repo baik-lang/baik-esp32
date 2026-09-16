@@ -1,0 +1,22 @@
+/* Uji touchRead + object Serial + object ESP. */
+tulis("--- sentuh, serial, esp ---");
+shimSetTouch(4, 12);
+tulis("sentuh 4 =", touchRead(4));
+tulis("sentuh 4 (alias) =", bacaSentuh(4));
+jika (touchRead(4) < 40) {
+  tulis("tersentuh");
+} lainnya {
+  tulis("tidak tersentuh");
+}
+/* pin tanpa kapabilitas TOUCH harus ditolak */
+tulis("sentuh 16 =", touchRead(16));
+
+Serial.begin(115200);
+Serial.println("halo dari Serial");
+Serial.print("tanpa newline");
+Serial.println("");
+
+tulis("chip =", ESP.getChipModel());
+tulis("core =", ESP.getChipCores());
+tulis("cpu MHz =", ESP.getCpuFreqMHz());
+tulis("suhu =", temperatureRead());

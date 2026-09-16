@@ -1,0 +1,20 @@
+/* Uji shim GPIO dasar: pinMode, digitalWrite, digitalRead, digitalToggle.
+ * Skrip ini bisa dijalankan APA ADANYA di papan ESP32 (kecuali fungsi
+ * shimSetDigital/shimGetLevel yang hanya ada di PC). */
+tulis("--- gpio dasar ---");
+pinMode(LED_BUILTIN, OUTPUT);
+digitalWrite(LED_BUILTIN, HIGH);
+digitalWrite(LED_BUILTIN, LOW);
+digitalToggle(LED_BUILTIN);
+tulis("level LED =", shimGetLevel(LED_BUILTIN));
+
+pinMode(4, INPUT_PULLUP);
+shimSetDigital(4, HIGH);      /* khusus PC: suntik level tombol */
+tulis("tombol =", digitalRead(4));
+shimSetDigital(4, LOW);
+tulis("tombol =", digitalRead(4));
+
+/* alias bahasa Indonesia harus berperilaku identik */
+modePin(5, OUTPUT);
+tulisDigital(5, HIGH);
+tulis("pin5 =", bacaDigital(5));

@@ -1,0 +1,25 @@
+/* Uji percabangan jika / lainnya.
+ * PENTING: BAIK MENOLAK operator `==` ("Use ===, not =="). Selalu `===`. */
+tulis("--- jika/lainnya ---");
+isi x = 10;
+jika (x > 5) {
+  tulis("lebih besar dari 5");
+} lainnya {
+  tulis("tidak");
+}
+
+jika (x === 10) {
+  tulis("sepuluh");
+}
+
+jika (x < 0) {
+  tulis("negatif");
+} lainnya jika (x === 0) {
+  tulis("nol");
+} lainnya {
+  tulis("positif");
+}
+
+tulis(x > 5 && x < 20);
+tulis(x > 100 || x === 10);
+tulis(!salah);

@@ -1,0 +1,12 @@
+/* KASUS UJI NEGATIF — harus GAGAL.
+ *
+ * `var` dikenali oleh lexer BAIK tetapi DITOLAK parser
+ * (src/baik/baik_parser.c, parse_statement) dengan galat "[var] tidak terimplementasi".
+ * Kata kunci deklarasi yang benar adalah `isi` (= let).
+ *
+ * Uji ini menjaga agar dokumen/contoh tidak terlanjur memakai `var`:
+ * bila suatu saat `var` diimplementasikan, uji ini akan GAGAL dan
+ * memaksa kita memperbarui dokumen. */
+tulis("sebelum var");
+var x = 1;
+tulis("baris ini TIDAK boleh tercetak", x);

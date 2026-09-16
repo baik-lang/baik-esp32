@@ -1,0 +1,22 @@
+/* Uji fungsi waktu. Shim memakai JAM VIRTUAL: millis()/micros() hanya maju
+ * ketika delay()/delayMicroseconds() dipanggil, sehingga hasil uji selalu
+ * sama persis (deterministik). Di papan, jam berjalan sungguhan. */
+tulis("--- waktu ---");
+tulis("millis awal =", millis());
+delay(250);
+tulis("millis =", millis());
+tunggu(250);                      /* alias Indonesia */
+tulis("millis =", millis());
+tulis("micros =", micros());
+delayMicroseconds(1500);
+tulis("micros =", micros());
+tulis("millis =", milidetik());
+
+/* pola "tanpa delay" yang lazim dipakai di Arduino */
+isi mulai = millis();
+isi lewat = 0;
+ulang (lewat < 1000) {
+  delay(200);
+  lewat = millis() - mulai;
+}
+tulis("lewat =", lewat);

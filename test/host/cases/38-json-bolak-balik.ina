@@ -1,0 +1,95 @@
+/* KASUS REGRESI - bolak-balik JSON.parse(JSON.stringify(x)).
+ *
+ * Dua bug lama membuat bolak-balik ini MUSTAHIL:
+ *   1. JSON.stringify menulis kata Indonesia (benar/salah/kosong) sehingga
+ *      hasilnya bukan JSON yang sah dan tidak bisa diurai balik.
+ *   2. JSON.parse memilih cabang dari huruf pertama 'n'/'t'/'f' tetapi
+ *      membandingkannya dengan "kosong"/"benar"/"salah", jadi true/false/null
+ *      TIDAK PERNAH cocok dan penguraian selalu gagal.
+ *
+ * Uji ini mengunci keduanya sekaligus: kalau salah satu kambuh, bolak-balik
+ * di bawah langsung rusak.
+ */
+tulis("--- bolak-balik JSON ---");
+
+/* Nilai dasar: hasil parse harus sama persis dengan nilai asal. */
+tulis(JSON.parse(JSON.stringify(benar)) === benar);
+tulis(JSON.parse(JSON.stringify(salah)) === salah);
+tulis(JSON.parse(JSON.stringify(kosong)) === kosong);
+tulis(JSON.parse(JSON.stringify("halo")) === "halo");
+
+/* REGRESI - bolak-balik ANGKA TELANJANG. Dulu ini tidak stabil: JSON.parse
+ * memanggil strtod() pada pointer token yang TIDAK diakhiri NUL, sehingga pada
+ * angka telanjang (tidak ada pembatas `,` `}` `]` sesudahnya) ia membaca
+ * melewati ujung token dan menyerap byte tak-terinisialisasi - 42 sesekali
+ * terbaca 422, -7 terbaca -73. Gagalnya acak, sekitar 1 dari 10 jalan.
+ * Sekarang token disalin dulu ke penyangga berbatas lalu diakhiri NUL.
+ * Uji ini akan goyah lagi kalau perbaikan itu hilang. */
+tulis(JSON.parse(JSON.stringify(42)) === 42);
+tulis(JSON.parse(JSON.stringify(-7)) === -7);
+tulis(JSON.parse(JSON.stringify(3.5)) === 3.5);
+
+/* Teks JSON antara harus berupa literal JSON yang sah, bukan kata Indonesia. */
+tulis(JSON.stringify(benar));
+tulis(JSON.stringify(salah));
+tulis(JSON.stringify(kosong));
+
+/* Untaian (array): urutan elemen HARUS utuh setelah bolak-balik. */
+isi a = [benar, salah, kosong, 1, "s"];
+isi teksA = JSON.stringify(a);
+tulis(teksA);
+isi a2 = JSON.parse(teksA);
+tulis(a2.panjang);
+tulis(a2[0]);
+tulis(a2[1]);
+tulis(a2[2]);
+tulis(a2[3]);
+tulis(a2[4]);
+tulis(JSON.stringify(a2) === teksA);
+
+/* Objek: bolak-balik lalu baca lewat properti.
+ *
+ * PERHATIKAN: perbandingan teks di bawah menghasilkan `salah`, dan itu MEMANG
+ * BENAR - bukan regresi. Urutan properti objek TERBALIK setiap kali melewati
+ * stringify/parse, jadi teksnya berbeda walau datanya identik. Yang dijamin
+ * adalah nilai tiap properti, bukan urutan penulisannya. Untaian tidak kena
+ * ini: urutannya stabil, dan perbandingan teks untuk untaian di atas `benar`. */
+isi o = { hidup: benar, mati: salah, isiKosong: kosong, cacah: 3, nama: "papan" };
+isi teksO = JSON.stringify(o);
+tulis(teksO);
+isi o2 = JSON.parse(teksO);
+tulis(o2.hidup);
+tulis(o2.mati);
+tulis(o2.isiKosong);
+tulis(o2.cacah);
+tulis(o2.nama);
+/* CATATAN: NILAI-nya utuh, tetapi URUTAN kunci TIDAK dipertahankan - objek
+ * BAIK menyimpan properti sebagai daftar berantai yang disisipkan di depan,
+ * jadi sekali bolak-balik urutannya terbalik. Karena itu perbandingan teks
+ * di bawah bernilai `salah`, dan itu MEMANG perilaku yang dikunci di sini:
+ * bandingkan nilai per properti, jangan bandingkan teks JSON-nya. */
+tulis(JSON.stringify(o2) === teksO);
+tulis(JSON.stringify(o2));
+/* Bolak-balik KEDUA mengembalikan urutan semula (dua kali balik = semula). */
+tulis(JSON.stringify(JSON.parse(JSON.stringify(o2))) === teksO);
+
+/* Struktur bersarang: objek berisi untaian berisi objek.
+ * Perbandingan teks di bawah juga `salah` karena alasan urutan properti yang
+ * sama seperti di atas; nilai-nilainya tetap utuh. */
+isi sarang = { daftar: [ { on: benar }, { on: salah } ], batas: kosong };
+isi teksS = JSON.stringify(sarang);
+tulis(teksS);
+isi s2 = JSON.parse(teksS);
+tulis(s2.daftar.panjang);
+tulis(s2.daftar[0].on);
+tulis(s2.daftar[1].on);
+tulis(s2.batas);
+/* Sama seperti di atas: urutan kunci berubah, nilai tidak. */
+tulis(JSON.stringify(s2) === teksS);
+tulis(JSON.stringify(s2));
+
+/* Tipe hasil parse harus tetap benar, bukan berubah jadi string. */
+tulis(tipe JSON.parse(JSON.stringify(benar)));
+tulis(tipe JSON.parse(JSON.stringify(kosong)));
+tulis(tipe JSON.parse(JSON.stringify(42)));
+tulis(tipe JSON.parse(JSON.stringify("halo")));

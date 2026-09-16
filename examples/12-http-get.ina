@@ -1,0 +1,74 @@
+// ============================================================
+//  12 - Mengambil data dari internet (HTTP GET)
+// ------------------------------------------------------------
+//  Peragaan        : HTTP.get, HTTP.statusTerakhir, HTTP.getJSON
+//  Perangkat keras : tidak ada
+//  Papan didukung  : ESP32, ESP32-S3
+//  Prasyarat       : WiFi sudah tersambung. Jalankan dulu
+//                    jalankan("/10-wifi-sambung.ina") bila perlu.
+//  Jalankan        : jalankan("/12-http-get.ina")
+// ============================================================
+
+jika (WiFi.isConnected() === salah) {
+  tulis("WiFi belum tersambung. Status:", WiFi.statusText());
+  tulis("Jalankan dulu: jalankan(\"/10-wifi-sambung.ina\")");
+} lainnya {
+  tulis("IP papan:", WiFi.localIP());
+  tulis("Heap sebelum permintaan:", ESP.getFreeHeap());
+  tulis("");
+
+  // --- 1. Mengambil teks biasa ---
+  isi url = "http://example.com/";
+  tulis("GET", url);
+  isi isi_halaman = HTTP.get(url);
+  isi kode = HTTP.statusTerakhir();
+  tulis("Kode HTTP:", kode);
+
+  jika (isi_halaman === kosong) {
+    tulis("Permintaan gagal. Kode negatif berarti galat koneksi,");
+    tulis("bukan galat dari server (mis. -1 = tidak bisa menyambung).");
+  } lainnya {
+    tulis("Panjang balasan:", isi_halaman.panjang, "byte");
+    // Balasan bisa panjang - cetak 200 karakter pertama saja supaya
+    // konsol tidak kebanjiran.
+    tulis("Cuplikan:");
+    tulis(isi_halaman.slice(0, 200));
+  }
+
+  tulis("");
+
+  // --- 2. Mengambil JSON dan langsung mengurainya ---
+  isi urlJson = "http://worldtimeapi.org/api/timezone/Asia/Jakarta";
+  tulis("GET JSON", urlJson);
+  isi data = HTTP.getJSON(urlJson);
+
+  jika (data === kosong) {
+    tulis("Gagal, kode:", HTTP.statusTerakhir());
+  } lainnya {
+    // Nama field bergantung pada API-nya. Cetak seluruh objek bila
+    // kamu belum tahu isinya:
+    tulis("Objek utuh:", JSON.stringify(data));
+    tulis("datetime  :", data.datetime);
+    tulis("timezone  :", data.timezone);
+  }
+
+  tulis("");
+  tulis("Heap sesudah permintaan:", ESP.getFreeHeap());
+  tulis("CATATAN: seluruh balasan dimuat ke memori sekaligus. Balasan");
+  tulis("berukuran puluhan kilobyte bisa membuat papan kehabisan heap.");
+}
+
+// ================== PERINGATAN KEAMANAN HTTPS ==================
+// Untuk URL https://, firmware memakai setInsecure(): sambungannya
+// TERENKRIPSI, tetapi sertifikat server TIDAK DIVERIFIKASI sama
+// sekali. Artinya papan mau berbicara kepada siapa pun yang mengaku
+// sebagai server tujuan - rentan serangan man-in-the-middle.
+//
+// JANGAN mengirim kata sandi, token API, atau data pribadi lewat
+// HTTP.* di jaringan yang tidak kamu percayai.
+//
+// Nilai balik saat gagal: HTTP.get(), HTTP.post(), dan HTTP.getJSON()
+// semuanya mengembalikan `kosong`. Periksa HTTP.statusTerakhir():
+// angka positif = kode HTTP dari server (mis. 404), angka NEGATIF =
+// gagal di tingkat koneksi (mis. -1 tidak bisa menyambung).
+// ===============================================================

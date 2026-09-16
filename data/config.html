@@ -1,78 +1,313 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BAIK X</title>
-    <style>
-        body, html {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            font-family: Arial, sans-serif;
-        }
-        #editor {
-            flex-grow: 1;
-        }
-        #run-button {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            background-color: #28a745;
-            color: white;
-            margin: 10px;
-        }
-        #config-form {
-            display: flex;
-            flex-direction: column;
-            margin: 10px;
-        }
-        #config-form input {
-            margin-bottom: 10px;
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        #config-form button {
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border: none;
-            border-radius: 4px;
-            background-color: #007bff;
-            color: white;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pengaturan Wi-Fi - ESP32</title>
+<!--
+  Halaman pengaturan Wi-Fi. Semua CSS/JS inline, tanpa pustaka CDN, supaya
+  halaman tetap bisa dibuka saat papan berada dalam mode Access Point
+  (perangkat yang terhubung tidak punya akses internet).
+  Endpoint yang dipakai tetap: POST /config dengan field "ssid" dan "password".
+-->
+<style>
+  :root {
+    --latar: #0f172a;
+    --panel: #1e293b;
+    --garis: #334155;
+    --teks: #e2e8f0;
+    --redup: #94a3b8;
+    --biru: #2563eb;
+    --biru-terang: #3b82f6;
+    --hijau: #22c55e;
+    --merah: #dc2626;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    background: var(--latar);
+    color: var(--teks);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+    font-size: 15px;
+  }
+
+  header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 12px;
+    padding: 10px 14px;
+    background: var(--panel);
+    border-bottom: 1px solid var(--garis);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: 17px;
+    font-weight: 600;
+    flex: 1 1 auto;
+  }
+
+  header h1 span {
+    display: block;
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--redup);
+  }
+
+  header a {
+    color: var(--teks);
+    text-decoration: none;
+    font-size: 14px;
+    padding: 7px 12px;
+    border: 1px solid var(--garis);
+    border-radius: 6px;
+    white-space: nowrap;
+  }
+
+  header a:hover, header a:focus { border-color: var(--biru); }
+
+  main {
+    max-width: 480px;
+    margin: 0 auto;
+    padding: 18px 14px 32px;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--panel);
+    border: 1px solid var(--garis);
+    border-radius: 10px;
+    padding: 16px 14px;
+  }
+
+  label {
+    font-size: 13px;
+    color: var(--redup);
+    margin-top: 8px;
+  }
+
+  input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 11px 10px;
+    font-size: 16px; /* 16px mencegah iOS memperbesar halaman saat fokus */
+    font-family: inherit;
+    color: var(--teks);
+    background: var(--latar);
+    border: 1px solid var(--garis);
+    border-radius: 6px;
+  }
+
+  input:focus { outline: 2px solid var(--biru); outline-offset: -1px; }
+  input.salah { border-color: var(--merah); }
+
+  .baris-cek {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    font-size: 14px;
+    color: var(--redup);
+  }
+
+  .baris-cek input { width: auto; }
+
+  button {
+    margin-top: 16px;
+    padding: 12px 14px;
+    font-size: 16px;
+    font-family: inherit;
+    font-weight: 600;
+    color: #fff;
+    background: var(--biru);
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+  }
+
+  button:hover:enabled { background: var(--biru-terang); }
+  button:disabled { opacity: .55; cursor: progress; }
+
+  #status {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 14px;
+    font-size: 14px;
+    min-height: 20px;
+  }
+
+  #lampu {
+    width: 10px;
+    height: 10px;
+    margin-top: 5px;
+    border-radius: 50%;
+    background: var(--redup);
+    flex: 0 0 auto;
+  }
+
+  #lampu.sibuk  { background: #eab308; animation: kedip 1s infinite; }
+  #lampu.sukses { background: var(--hijau); }
+  #lampu.gagal  { background: var(--merah); }
+
+  @keyframes kedip { 50% { opacity: .25; } }
+
+  .catatan {
+    margin-top: 18px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--redup);
+    background: var(--panel);
+    border: 1px solid var(--garis);
+    border-radius: 10px;
+  }
+
+  .catatan strong { color: var(--teks); }
+
+  @media (max-width: 560px) {
+    header h1 { flex: 1 1 100%; }
+    header a { flex: 1 1 100%; text-align: center; }
+  }
+</style>
 </head>
 <body>
 
-    <form id="config-form">
-        <input type="text" id="ssid" placeholder="Wi-Fi SSID" required>
-        <input type="password" id="password" placeholder="Wi-Fi Password" required>
-        <button type="button" id="config-button">Save Wi-Fi Config</button>
-    </form>
-    
-    <script>
-            document.getElementById('config-button').addEventListener('click', function() {
-                const ssid = document.getElementById('ssid').value;
-                const password = document.getElementById('password').value;
-                const formData = new FormData();
-                formData.append('ssid', ssid);
-                formData.append('password', password);
+<header>
+  <h1>Pengaturan Wi-Fi
+    <span>Sambungkan papan ESP32 ke jaringan Wi-Fi</span>
+  </h1>
+  <a href="/">Kembali ke editor</a>
+</header>
 
-                fetch('/config', {
-                    method: 'POST',
-                    body: formData
-                }).then(response => response.text())
-                  .then(text => alert(text))
-                  .catch(error => console.error('Error:', error));
-            });
-    </script>
+<main>
+  <form id="formulir" autocomplete="off">
+    <label for="ssid">Nama jaringan (SSID)</label>
+    <input type="text" id="ssid" name="ssid" placeholder="contoh: WiFi-Rumah"
+           maxlength="32" spellcheck="false" autocapitalize="off"
+           autocorrect="off" required>
+
+    <label for="password">Kata sandi</label>
+    <input type="password" id="password" name="password"
+           placeholder="minimal 8 karakter" maxlength="63" spellcheck="false">
+
+    <div class="baris-cek">
+      <input type="checkbox" id="tampilkan">
+      <label for="tampilkan" style="margin:0">Tampilkan kata sandi</label>
+    </div>
+
+    <div class="baris-cek">
+      <input type="checkbox" id="terbuka">
+      <label for="terbuka" style="margin:0">Jaringan terbuka (tanpa kata sandi)</label>
+    </div>
+
+    <button type="submit" id="tombol-simpan">Simpan &amp; mulai ulang</button>
+
+    <div id="status">
+      <span id="lampu"></span>
+      <span id="pesan">Isi data jaringan, lalu tekan Simpan.</span>
+    </div>
+  </form>
+
+  <div class="catatan">
+    <strong>Catatan.</strong>
+    Setelah disimpan, papan akan <em>mulai ulang</em> dan mencoba menyambung ke
+    jaringan tersebut. Alamat IP baru ditampilkan di konsol serial (115200 baud).
+    Bila penyambungan gagal, papan kembali ke mode Access Point bawaan
+    (<strong>ESP32_AP</strong> / <strong>12345678</strong>) sehingga halaman ini
+    bisa dibuka lagi.
+  </div>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  var formulir  = document.getElementById("formulir");
+  var ssid      = document.getElementById("ssid");
+  var sandi     = document.getElementById("password");
+  var tampilkan = document.getElementById("tampilkan");
+  var terbuka   = document.getElementById("terbuka");
+  var tombol    = document.getElementById("tombol-simpan");
+  var lampu     = document.getElementById("lampu");
+  var pesan     = document.getElementById("pesan");
+
+  /* Tampilkan status: keadaan = "" | "sibuk" | "sukses" | "gagal". */
+  function setStatus(keadaan, teks) {
+    lampu.className = keadaan;
+    pesan.textContent = teks;
+  }
+
+  tampilkan.addEventListener("change", function () {
+    sandi.type = tampilkan.checked ? "text" : "password";
+  });
+
+  /* Jaringan terbuka: kosongkan dan nonaktifkan kolom kata sandi. */
+  terbuka.addEventListener("change", function () {
+    sandi.disabled = terbuka.checked;
+    if (terbuka.checked) {
+      sandi.value = "";
+      sandi.classList.remove("salah");
+    }
+    sandi.placeholder = terbuka.checked ? "(tidak dipakai)"
+                                        : "minimal 8 karakter";
+  });
+
+  formulir.addEventListener("submit", function (e) {
+    e.preventDefault();
+
+    var nama = ssid.value.trim();
+    var kunci = terbuka.checked ? "" : sandi.value;
+
+    ssid.classList.remove("salah");
+    sandi.classList.remove("salah");
+
+    if (nama === "") {
+      ssid.classList.add("salah");
+      setStatus("gagal", "Nama jaringan (SSID) tidak boleh kosong.");
+      ssid.focus();
+      return;
+    }
+
+    /* WPA/WPA2 mensyaratkan kata sandi 8-63 karakter. */
+    if (!terbuka.checked && (kunci.length < 8 || kunci.length > 63)) {
+      sandi.classList.add("salah");
+      setStatus("gagal", "Kata sandi Wi-Fi harus 8-63 karakter. " +
+                         "Centang \"Jaringan terbuka\" bila memang tanpa sandi.");
+      sandi.focus();
+      return;
+    }
+
+    /* Kedua field WAJIB dikirim: sisi papan membacanya tanpa pemeriksaan null. */
+    var data = new FormData();
+    data.append("ssid", nama);
+    data.append("password", kunci);
+
+    tombol.disabled = true;
+    setStatus("sibuk", "Menyimpan pengaturan untuk \"" + nama + "\" …");
+
+    fetch("/config", { method: "POST", body: data })
+      .then(function (r) {
+        return r.text().then(function (t) {
+          if (!r.ok) { throw new Error(t || ("HTTP " + r.status)); }
+          return t;
+        });
+      })
+      .then(function (t) {
+        setStatus("sukses", t || "Tersimpan. Papan dimulai ulang …");
+      })
+      .catch(function (err) {
+        setStatus("gagal", "Gagal menyimpan: " + err.message);
+        tombol.disabled = false;
+      });
+  });
+})();
+</script>
 </body>
 </html>

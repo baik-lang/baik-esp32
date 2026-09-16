@@ -1,0 +1,20 @@
+/* Uji operator perbandingan, logika, dan bit. */
+tulis("--- operator ---");
+tulis(1 === 1);
+tulis(1 !== 2);
+tulis("a" === "a");
+tulis(2 < 3);
+tulis(3 <= 3);
+tulis(4 > 5);
+tulis(5 >= 5);
+
+tulis(5 & 3);
+tulis(5 | 3);
+tulis(5 ^ 3);
+tulis(1 << 4);
+tulis(256 >> 2);
+
+isi a = 7;
+a = a + 3;  tulis(a);
+a = a - 2;  tulis(a);
+a = a * 2;  tulis(a);

@@ -1,0 +1,22 @@
+/* Uji PWM (analogWrite/ledc) dan tone/noTone. */
+tulis("--- pwm & tone ---");
+pinMode(16, OUTPUT);
+analogWrite(16, 128);
+tulis("duty =", shimGetPwm(16));
+analogWrite(16, 300);             /* dibatasi ke max (255) */
+tulis("duty =", shimGetPwm(16));
+analogWrite(16, -10);             /* dibatasi ke 0 */
+tulis("duty =", shimGetPwm(16));
+analogWrite(17, 512, 1023);
+tulis("duty17 =", shimGetPwm(17));
+
+ledcAttach(18, 5000, 8);
+ledcWrite(18, 200);
+tulis("ledc18 =", shimGetPwm(18));
+tulisPwm(18, 10);
+
+tone(19, 440, 250);
+noTone(19);
+
+/* PWM tidak tersedia pada pin input-only */
+analogWrite(34, 100);

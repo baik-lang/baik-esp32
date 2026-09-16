@@ -1,0 +1,80 @@
+// ============================================================
+//  14 - Membaca dan menulis berkas di SPIFFS
+// ------------------------------------------------------------
+//  Peragaan        : FS.begin/write/append/read/exists/size/list/
+//                    remove/rename, FS.totalBytes/usedBytes/freeBytes
+//  Perangkat keras : tidak ada
+//  Papan didukung  : ESP32, ESP32-S3
+//  Jalankan        : jalankan("/14-berkas-spiffs.ina")
+// ============================================================
+
+jika (FS.begin(benar) === salah) {
+  tulis("Gagal memasang SPIFFS.");
+} lainnya {
+  isi BERKAS = "/contoh-log.txt";
+
+  tulis("Kapasitas SPIFFS:", FS.totalBytes(), "byte");
+  tulis("Terpakai        :", FS.usedBytes(), "byte");
+  tulis("Bebas           :", FS.freeBytes(), "byte");
+  tulis("");
+
+  // --- Menulis (menimpa isi lama) ---
+  FS.write(BERKAS, "baris pertama\n");
+
+  // --- Menambah di akhir berkas ---
+  untuk (isi i = 2; i <= 5; i++) {
+    FS.append(BERKAS, "baris ke-" + JSON.stringify(i) + "\n");
+  }
+
+  // --- Membaca kembali ---
+  tulis("Berkas ada?", FS.exists(BERKAS), "| ukuran:", FS.size(BERKAS), "byte");
+  tulis("Isi berkas:");
+  tulis(FS.read(BERKAS));
+
+  // --- Mengganti nama ---
+  FS.rename(BERKAS, "/contoh-log-lama.txt");
+  tulis("Sesudah rename, berkas lama ada?", FS.exists(BERKAS));
+
+  // --- Mendaftar isi direktori akar ---
+  tulis("");
+  tulis("Isi /");
+  isi daftar = FS.list("/");
+  untuk (isi j = 0; j < daftar.panjang; j++) {
+    isi b = daftar[j];
+    jika (b.direktori) {
+      tulis("  [DIR ]", b.nama);
+    } lainnya {
+      tulis("  [FILE]", b.nama, b.ukuran, "byte");
+    }
+  }
+
+  // --- Memeriksa galat dengan penanda yang tepat ---
+  tulis("");
+  isi hilang = FS.read("/berkas-yang-tidak-ada.txt");
+  tulis("FS.read berkas hilang -> kosong?", hilang === kosong);
+  tulis("FS.size berkas hilang -> negatif?", FS.size("/berkas-yang-tidak-ada.txt") < 0);
+  tulis("FS.mkdir selalu salah  ->", FS.mkdir("/folder"));
+
+  // --- Membersihkan ---
+  FS.remove("/contoh-log-lama.txt");
+  tulis("");
+  tulis("Berkas contoh dihapus. Selesai.");
+
+  // CATATAN PATH:
+  //   FS.*   memakai path gaya SPIFFS  : "/contoh-log.txt"
+  //   muat() memakai path VFS POSIX    : "/spiffs/contoh-log.txt"
+  // Keduanya menunjuk berkas yang sama.
+  //
+  // SPIFFS ITU DATAR - tidak punya direktori sungguhan. Karena itu
+  // FS.mkdir() dan FS.rmdir() SELALU mengembalikan `salah`; keduanya
+  // hanya terdaftar demi kelengkapan API. Garis miring pada nama
+  // berkas ("/data/suhu.txt") sekadar bagian dari namanya.
+  //
+  // NILAI BALIK SAAT GAGAL TIDAK SERAGAM - periksa yang tepat:
+  //   FS.read(path)  -> kosong      jika (hasil === kosong)
+  //   FS.list(dir)   -> kosong      jika (hasil === kosong)
+  //   FS.size(path)  -> -1          jika (hasil < 0)
+  //   sisanya FS.*   -> salah       jika (hasil === salah)
+  // Perhatikan FS.size() memakai -1, BUKAN salah. Dan karena 0 adalah
+  // ukuran yang sah untuk berkas kosong, `jika (FS.size(p))` tidak cukup.
+}

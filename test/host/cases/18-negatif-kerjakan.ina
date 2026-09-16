@@ -1,0 +1,10 @@
+/* KASUS UJI NEGATIF — harus GAGAL.
+ *
+ * `kerjakan` (= do..while) belum diimplementasikan parser BAIK.
+ * Pengganti: `ulang (benar) { ... jika (selesai) { berhenti; } }` */
+tulis("sebelum kerjakan");
+isi i = 0;
+kerjakan {
+  i = i + 1;
+} ulang (i < 3);
+tulis("baris ini TIDAK boleh tercetak", i);

@@ -1,0 +1,78 @@
+/* Uji UNTUK BERSARANG beserta berhenti/teruskan di dalamnya.
+ *
+ * Kasus 07-untuk hanya menguji satu tingkat perulangan. Yang penting di sini:
+ * berhenti dan teruskan hanya mempengaruhi perulangan TERDEKAT, bukan
+ * perulangan luar.
+ */
+tulis("--- untuk bersarang ---");
+
+isi i; isi j; isi k;
+
+/* Tabel perkalian 3x3: hitung jumlah seluruh selnya. */
+isi total = 0;
+untuk (i = 1; i <= 3; i++) {
+  untuk (j = 1; j <= 3; j++) {
+    total = total + i * j;
+  }
+}
+tulis(total);
+
+/* Tiga tingkat: pencacah harus mencapai 3*4*5. */
+isi cacah = 0;
+untuk (i = 0; i < 3; i++) {
+  untuk (j = 0; j < 4; j++) {
+    untuk (k = 0; k < 5; k++) { cacah++; }
+  }
+}
+tulis(cacah);
+
+/* berhenti di perulangan DALAM tidak menghentikan perulangan LUAR. */
+isi masuk = 0;
+untuk (i = 0; i < 4; i++) {
+  untuk (j = 0; j < 10; j++) {
+    jika (j === 2) { berhenti; }
+    masuk++;
+  }
+}
+tulis(masuk);
+
+/* teruskan di perulangan dalam hanya melompati satu putaran dalam. */
+isi lewat = 0;
+untuk (i = 0; i < 3; i++) {
+  untuk (j = 0; j < 5; j++) {
+    jika (j % 2 === 0) { teruskan; }
+    lewat = lewat + j;
+  }
+}
+tulis(lewat);
+
+/* Segitiga: batas perulangan dalam bergantung pada pencacah luar. */
+isi segitiga = 0;
+untuk (i = 1; i <= 5; i++) {
+  untuk (j = 1; j <= i; j++) { segitiga++; }
+}
+tulis(segitiga);
+
+/* Bangun matriks segitiga lewat untuk bersarang. */
+isi baris = [];
+untuk (i = 1; i <= 4; i++) {
+  isi satu = [];
+  untuk (j = 1; j <= i; j++) { satu.push(i * j); }
+  baris.push(satu);
+}
+tulis(JSON.stringify(baris));
+
+/* Pencacah luar tetap terbaca dengan benar setelah perulangan dalam selesai. */
+isi jejak = [];
+untuk (i = 0; i < 3; i++) {
+  untuk (j = 0; j < 2; j++) { }
+  jejak.push(i * 10 + j);
+}
+tulis(JSON.stringify(jejak));
+
+/* Perulangan dalam yang badannya tidak pernah jalan. */
+isi nol = 0;
+untuk (i = 0; i < 5; i++) {
+  untuk (j = 0; j < 0; j++) { nol++; }
+}
+tulis(nol);

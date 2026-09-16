@@ -1,0 +1,11 @@
+--- skenario sensor --- 
+[GPIO] mode pin 34 <- INPUT
+[GPIO] mode pin 2 <- OUTPUT
+nilai= 500 persen= 12 led= 0 
+nilai= 1500 persen= 36 led= 0 
+nilai= 2500 persen= 61 led= 1 
+nilai= 3500 persen= 85 led= 1 
+nilai= 4000 persen= 97 led= 1 
+jumlah nyala = 3 
+waktu total = 500 
+[keluar=0]

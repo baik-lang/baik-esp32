@@ -1,0 +1,16 @@
+--- adc --- 
+[GPIO] mode pin 34 <- INPUT
+[ADC] pin 34 -> 2048
+mentah = 2048 
+[ADC] pin 34 -> 1650 mV
+milivolt = 1650 
+persen = 50 
+[ADC] pin 35 -> 0
+nol = 0 
+[ADC] pin 35 -> 4095
+penuh = 4095 
+[ADC] pin 35 -> 3300 mV
+mv penuh = 3300 
+[ADC] pin 36 -> 630
+bawaan 36 = 630 
+[keluar=0]

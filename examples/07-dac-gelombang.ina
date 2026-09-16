@@ -1,0 +1,47 @@
+// ============================================================
+//  07 - Gelombang analog dengan DAC  (ESP32 SAJA)
+// ------------------------------------------------------------
+//  Peragaan        : dacWrite, dacDisable, sin(), deteksi kapabilitas
+//  Perangkat keras : multimeter, osiloskop, atau LED + resistor 1k di
+//                    GPIO25. Bisa juga amplifier kecil untuk mendengar
+//                    gelombang sinusnya.
+//  Papan didukung  : ESP32 saja. ESP32-S3 TIDAK PUNYA DAC - skrip akan
+//                    mendeteksi sendiri dan berhenti dengan sopan.
+//  Jalankan        : jalankan("/07-dac-gelombang.ina")
+// ============================================================
+
+isi pinDac = daftarPin(CAP_DAC);
+
+jika (pinDac.panjang === 0) {
+  tulis("Papan ini (" + BOARD + ") tidak punya DAC.");
+  tulis("DAC hanya ada di ESP32 klasik, di GPIO25 dan GPIO26.");
+  tulis("Sebagai pengganti di ESP32-S3, pakai PWM (ledcWrite) yang");
+  tulis("dilewatkan tapis RC sederhana: 1k ohm seri + 10uF ke GND.");
+} lainnya {
+  isi PIN = pinDac[0];
+  tulis("DAC tersedia di GPIO", PIN);
+
+  // --- Tangga naik (ramp) ---
+  tulis("Tangga naik 0 -> 3,3 V");
+  untuk (isi v = 0; v <= 255; v += 5) { dacWrite(PIN, v); delay(20); }
+
+  // --- Tangga turun ---
+  tulis("Tangga turun 3,3 V -> 0");
+  untuk (isi w = 255; w >= 0; w -= 5) { dacWrite(PIN, w); delay(20); }
+
+  // --- Gelombang sinus ---
+  // DAC 8 bit: 0 = 0 V, 255 = ~3,3 V. Titik tengahnya 128.
+  tulis("Gelombang sinus, 5 putaran");
+  untuk (isi p = 0; p < 5; p++) {
+    untuk (isi s = 0; s < 36; s++) {
+      isi sudut = (s * TWO_PI) / 36;
+      isi nilai = round(128 + 120 * sin(sudut));
+      dacWrite(PIN, batas(nilai, 0, 255));
+      delay(10);
+    }
+  }
+
+  dacWrite(PIN, 0);
+  dacDisable(PIN);
+  tulis("Selesai, DAC dimatikan.");
+}

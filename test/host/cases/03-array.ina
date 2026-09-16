@@ -1,0 +1,22 @@
+/* Uji array: literal, indeks, .panjang, .push, .splice, iterasi. */
+tulis("--- array ---");
+isi a = [10, 20, 30];
+tulis(a.panjang);
+tulis(a[0]);
+tulis(a[2]);
+a[1] = 99;
+tulis(a[1]);
+a.push(40);
+tulis(a.panjang);
+tulis(JSON.stringify(a));
+isi jumlah = 0;
+isi i;
+untuk (i = 0; i < a.panjang; i++) {
+  jumlah = jumlah + a[i];
+}
+tulis(jumlah);
+isi b = [1, 2, 3, 4, 5];
+tulis(JSON.stringify(b.splice(1, 3)));
+/* CATATAN: tulis() pada array TIDAK mencetak isinya, hanya tipe <untaian>.
+ * Pakai JSON.stringify bila ingin melihat isi. */
+tulis(a);

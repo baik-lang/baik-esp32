@@ -1,0 +1,60 @@
+/* Uji OPERASI OBJEK BERANTAI: objek di dalam objek, array berisi objek,
+ * objek berisi array, penambahan properti saat jalan, dan penelusuran
+ * a.b.c[i].d dalam satu ekspresi.
+ *
+ * Kasus 04-object hanya menguji objek datar satu tingkat.
+ */
+tulis("--- objek berantai ---");
+
+isi cfg = { papan: { nama: "devkit", pin: { led: 2, tombol: 4 } } };
+tulis(cfg.papan.nama);
+tulis(cfg.papan.pin.led);
+
+/* Tulis di kedalaman 3. */
+cfg.papan.pin.led = 13;
+tulis(cfg.papan.pin.led);
+
+/* Properti BARU di kedalaman 3. */
+cfg.papan.pin.relay = 21;
+tulis(cfg.papan.pin.relay);
+
+/* Objek berisi array berisi objek: penelusuran berantai penuh. */
+isi sistem = {
+  sensor: [
+    { nama: "suhu", nilai: 27, batas: { min: 0, max: 50 } },
+    { nama: "lembap", nilai: 65, batas: { min: 20, max: 80 } }
+  ]
+};
+tulis(sistem.sensor.panjang);
+tulis(sistem.sensor[0].nama);
+tulis(sistem.sensor[1].batas.max);
+tulis(sistem.sensor[0].nilai + sistem.sensor[1].nilai);
+
+/* Ubah lewat rantai, lalu baca ulang lewat rantai. */
+sistem.sensor[1].batas.max = 90;
+tulis(sistem.sensor[1].batas.max);
+
+/* Iterasi array objek dan jumlahkan lewat rantai. */
+isi i; isi jml = 0;
+untuk (i = 0; i < sistem.sensor.panjang; i++) {
+  jml = jml + sistem.sensor[i].batas.max - sistem.sensor[i].batas.min;
+}
+tulis(jml);
+
+/* Objek dipakai sebagai argumen dan sebagai nilai balik fungsi. */
+fungsi ambilBatas(s) { balik s.batas; }
+tulis(ambilBatas(sistem.sensor[0]).max);
+
+fungsi buatTitik(x, y) { balik { x: x, y: y }; }
+tulis(buatTitik(3, 4).y);
+tulis(buatTitik(buatTitik(1, 2).x, 9).y);
+
+/* Objek adalah RUJUKAN: menyalin variabel tidak menyalin isinya. */
+isi rujuk = cfg.papan.pin;
+rujuk.led = 32;
+tulis(cfg.papan.pin.led);
+
+/* Akses properti yang tidak ada. */
+tulis(cfg.papan.tidakada);
+tulis(tipe cfg.papan.tidakada);
+tulis(tipe cfg.papan.pin);

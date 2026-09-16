@@ -1,0 +1,12 @@
+--- JSON nilai dasar --- 
+true 
+false 
+null 
+ 
+42 
+-7 
+"halo" 
+[true,false,null] 
+[1,"a",true,null] 
+{"c":null,"b":false,"a":true} 
+[keluar=0]
